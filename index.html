@@ -19,326 +19,298 @@
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-            padding: 1.5rem;
-            max-width: 1100px;
-            margin: 0 auto;
+            background-color: var(--bg); color: var(--text); line-height: 1.5; padding: 1.5rem; max-width: 1200px; margin: 0 auto;
         }
-        .card {
-            background: var(--card);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            margin-bottom: 2rem;
-        }
-        h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; text-align: center; color: var(--primary); }
-        h2 { font-size: 1.25rem; margin-top: 0; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; color: var(--secondary); }
+        .card { background: var(--card); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom: 2rem; }
+        h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; text-align: center; color: var(--primary); }
+        h2 { font-size: 1.25rem; margin-top: 0; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; color: var(--secondary); display: flex; justify-content: space-between; }
         
+        /* Input Form */
         .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-            background: var(--accent);
-            padding: 1.5rem;
-            border-radius: 8px;
-            align-items: flex-end;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;
+            background: var(--accent); padding: 1.5rem; border-radius: 8px; align-items: flex-end; margin-bottom: 2rem;
         }
-        .input-field { display: flex; flex-direction: column; gap: 0.4rem; }
-        label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--secondary); }
-        input {
-            padding: 0.6rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
+        .input-field { display: flex; flex-direction: column; gap: 0.3rem; }
+        label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--secondary); }
+        input { padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; transition: all 0.2s; }
         input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        input.calculated { background-color: #f8fafc; color: #64748b; font-style: italic; }
+        input.auto-filled { background-color: #f0f9ff; color: #0369a1; border-color: #bae6fd; font-weight: 600; }
         
-        button {
-            padding: 0.6rem 1.2rem;
-            border-radius: 6px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
-            border: none;
-        }
-        button:active { transform: scale(0.98); }
+        button { padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
         .btn-add { background-color: var(--primary); color: white; }
-        .btn-remove { background-color: #fee2e2; color: var(--danger); padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+        .btn-add:hover { background-color: #1d4ed8; }
+        .btn-remove { background-color: #fee2e2; color: var(--danger); padding: 0.25rem 0.5rem; font-size: 0.75rem; }
         .btn-remove:hover { background-color: var(--danger); color: white; }
 
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; min-width: 600px; }
-        th { text-align: left; padding: 1rem; font-size: 0.85rem; color: var(--secondary); border-bottom: 2px solid var(--border); }
-        td { padding: 1rem; border-bottom: 1px solid var(--border); }
+        /* Asset Sections */
+        .asset-group { margin-bottom: 2.5rem; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
+        .asset-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .asset-title { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+        .current-price-input { width: 120px; font-size: 1rem; font-weight: 700; text-align: right; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+        th { text-align: left; padding: 0.75rem; font-size: 0.75rem; color: var(--secondary); border-bottom: 1px solid var(--border); text-transform: uppercase; }
+        td { padding: 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
         
-        .summary-box {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 2px solid var(--border);
+        .summary-bar {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
+            margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--border);
         }
         .stat { display: flex; flex-direction: column; }
-        .stat-label { font-size: 0.9rem; color: var(--secondary); }
+        .stat-label { font-size: 0.8rem; color: var(--secondary); }
         .stat-value { font-size: 1.5rem; font-weight: 800; }
+
+        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; }
+        .chart-box { height: 350px; }
         
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 2rem;
-        }
-        .chart-container { height: 350px; position: relative; }
-        
-        .info-text { font-size: 0.85rem; color: var(--secondary); text-align: center; margin-top: 1rem; }
-        .asset-tag { display: inline-block; padding: 0.2rem 0.5rem; background: #e2e8f0; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-right: 0.5rem; }
-        .hint { font-size: 0.7rem; color: var(--secondary); font-weight: 400; text-transform: none; margin-top: -0.2rem; }
+        .info-badge { font-size: 0.7rem; padding: 0.2rem 0.4rem; background: #e2e8f0; border-radius: 4px; vertical-align: middle; margin-left: 5px; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h1>Meerwaardebelasting Calculator</h1>
-        <p class="info-text">Host je eigen berekening voor vermogenswinstbelasting.</p>
+        <p style="text-align: center; color: var(--secondary); margin-bottom: 2rem;">Host je eigen berekening. Inclusief FIFO-principe en automatische veld-aanvulling.</p>
         
-        <div class="form-grid">
+        <!-- Smart Input Form -->
+        <div class="form-grid" id="input-form">
             <div class="input-field">
-                <label>Asset <span class="hint">(bv. BTC)</span></label>
-                <input type="text" id="asset-name" placeholder="Naam">
+                <label>Asset Naam</label>
+                <input type="text" id="in-asset" placeholder="bv. BTC" value="BTC">
             </div>
             <div class="input-field">
                 <label>Aantal</label>
-                <input type="number" id="buy-quantity" placeholder="0" step="any" oninput="recalc('quantity')">
+                <input type="number" id="in-qty" placeholder="0.00" step="any">
             </div>
             <div class="input-field">
-                <label>Eenheidsprijs (€)</label>
-                <input type="number" id="buy-price" placeholder="0.00" step="any" oninput="recalc('price')">
+                <label>Prijs per stuk (€)</label>
+                <input type="number" id="in-price" placeholder="0.00" step="any">
             </div>
             <div class="input-field">
-                <label>Totale Aankoop (€)</label>
-                <input type="number" id="buy-total" placeholder="0.00" step="any" oninput="recalc('total')">
+                <label>Totaal Bedrag (€)</label>
+                <input type="number" id="in-total" placeholder="0.00" step="any">
             </div>
             <div class="input-field">
                 <label>Order / Datum</label>
-                <input type="text" id="buy-order" placeholder="Optioneel">
+                <input type="text" id="in-order" placeholder="Optioneel">
             </div>
             <button class="btn-add" onclick="addEntry()">Toevoegen</button>
         </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Asset & Order</th>
-                        <th>Aantal</th>
-                        <th>Eenheidsprijs</th>
-                        <th>Totaal Betaald</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="entries-body"></tbody>
-            </table>
+        <div id="assets-container">
+            <!-- Asset groups will be injected here -->
         </div>
 
-        <div class="summary-box">
+        <div class="summary-bar">
             <div class="stat">
                 <span class="stat-label">Totale Investering (np₁)</span>
-                <span class="stat-value" id="total-investment">€ 0,00</span>
+                <span class="stat-value" id="stat-np1">€ 0,00</span>
             </div>
             <div class="stat">
-                <span class="stat-label">Vrijstellingsgrens</span>
-                <span class="stat-value" style="color: var(--success);">€ 10.000,00</span>
+                <span class="stat-label">Huidige Waarde (np₂)</span>
+                <span class="stat-value" id="stat-np2" style="color: var(--primary);">€ 0,00</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Belastbare Meerwaarde</span>
+                <span class="stat-value" id="stat-gain" style="color: var(--success);">€ 0,00</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Geschatte Belasting</span>
+                <span class="stat-value" id="stat-tax" style="color: var(--danger);">€ 0,00</span>
             </div>
         </div>
     </div>
 
-    <div class="charts-grid">
+    <div class="charts-container">
         <div class="card">
-            <h2>Portefeuillewaarde</h2>
-            <div class="chart-container">
-                <canvas id="valueChart"></canvas>
-            </div>
+            <h2>Portefeuillewaarde (Provisie)</h2>
+            <div class="chart-box"><canvas id="valueChart"></canvas></div>
         </div>
         <div class="card">
-            <h2>Meerwaarde & Belasting</h2>
-            <div class="chart-container">
-                <canvas id="taxChart"></canvas>
-            </div>
+            <h2>Belasting-Trend</h2>
+            <div class="chart-box"><canvas id="taxChart"></canvas></div>
         </div>
     </div>
 
     <script>
-        let entries = [];
-        let valueChart = null;
-        let taxChart = null;
+        let assets = {}; // { 'BTC': { currentPrice: 0, entries: [...] } }
+        let charts = { value: null, tax: null };
 
-        function recalc(source) {
-            const q = document.getElementById('buy-quantity');
-            const p = document.getElementById('buy-price');
-            const t = document.getElementById('buy-total');
+        // --- Smart Input Triangulation ---
+        const fields = ['in-qty', 'in-price', 'in-total'];
+        fields.forEach(id => {
+            document.getElementById(id).addEventListener('input', () => triangulate(id));
+        });
 
-            const quantity = parseFloat(q.value);
-            const price = parseFloat(p.value);
-            const total = parseFloat(t.value);
+        function triangulate(sourceId) {
+            const qty = document.getElementById('in-qty');
+            const price = document.getElementById('in-price');
+            const total = document.getElementById('in-total');
 
-            if (source === 'quantity' || source === 'price') {
-                if (!isNaN(quantity) && !isNaN(price)) {
-                    t.value = (quantity * price).toFixed(4);
-                    t.classList.add('calculated');
-                } else {
-                    t.classList.remove('calculated');
+            // Clear 'auto-filled' style from all except maybe the one we are about to fill
+            fields.forEach(f => document.getElementById(f).classList.remove('auto-filled'));
+
+            const qVal = parseFloat(qty.value);
+            const pVal = parseFloat(price.value);
+            const tVal = parseFloat(total.value);
+
+            if (sourceId === 'in-qty' || sourceId === 'in-price') {
+                if (!isNaN(qVal) && !isNaN(pVal)) {
+                    total.value = (qVal * pVal).toFixed(4);
+                    total.classList.add('auto-filled');
                 }
-            } else if (source === 'total') {
-                t.classList.remove('calculated');
-                if (!isNaN(total)) {
-                    if (!isNaN(quantity) && quantity !== 0) {
-                        p.value = (total / quantity).toFixed(4);
-                        p.classList.add('calculated');
-                        q.classList.remove('calculated');
-                    } else if (!isNaN(price) && price !== 0) {
-                        q.value = (total / price).toFixed(4);
-                        q.classList.add('calculated');
-                        p.classList.remove('calculated');
+            } else if (sourceId === 'in-total') {
+                if (!isNaN(tVal)) {
+                    if (!isNaN(qVal) && qVal !== 0) {
+                        price.value = (tVal / qVal).toFixed(4);
+                        price.classList.add('auto-filled');
+                    } else if (!isNaN(pVal) && pVal !== 0) {
+                        qty.value = (tVal / pVal).toFixed(4);
+                        qty.classList.add('auto-filled');
                     }
                 }
             }
-            if (q.value === "") q.classList.remove('calculated');
-            if (p.value === "") p.classList.remove('calculated');
-            if (t.value === "") t.classList.remove('calculated');
         }
 
+        // --- Core Logic ---
         function addEntry() {
-            const asset = document.getElementById('asset-name').value || 'Asset';
-            const price = parseFloat(document.getElementById('buy-price').value);
-            const quantity = parseFloat(document.getElementById('buy-quantity').value);
-            const total = parseFloat(document.getElementById('buy-total').value);
-            const order = document.getElementById('buy-order').value || '-';
+            const name = document.getElementById('in-asset').value.toUpperCase() || 'UNKNOWN';
+            const qty = parseFloat(document.getElementById('in-qty').value);
+            const price = parseFloat(document.getElementById('in-price').value);
+            const total = parseFloat(document.getElementById('in-total').value);
+            const order = document.getElementById('in-order').value || `Order #${(assets[name]?.entries.length || 0) + 1}`;
 
-            if (!isNaN(total) && !isNaN(quantity) && quantity > 0) {
-                entries.push({ asset, price: total/quantity, quantity, order });
-                updateUI();
-                clearInputs();
-            } else if (!isNaN(price) && !isNaN(quantity) && quantity > 0) {
-                entries.push({ asset, price, quantity, order });
-                updateUI();
-                clearInputs();
-            }
-        }
+            if (isNaN(qty) || isNaN(price) || qty <= 0) return;
 
-        function removeEntry(index) {
-            entries.splice(index, 1);
+            if (!assets[name]) assets[name] = { currentPrice: price, entries: [] };
+            
+            assets[name].entries.push({ qty, price, total: qty * price, order, timestamp: Date.now() });
+            
+            // Sort by timestamp (FIFO principle)
+            assets[name].entries.sort((a, b) => a.timestamp - b.timestamp);
+            
             updateUI();
+            clearInputs();
         }
 
         function clearInputs() {
-            document.getElementById('buy-price').value = '';
-            document.getElementById('buy-quantity').value = '';
-            document.getElementById('buy-total').value = '';
-            document.getElementById('buy-order').value = '';
-            document.querySelectorAll('input').forEach(i => i.classList.remove('calculated'));
+            fields.forEach(f => {
+                const el = document.getElementById(f);
+                el.value = '';
+                el.classList.remove('auto-filled');
+            });
+            document.getElementById('in-order').value = '';
         }
 
-        function updateUI() {
-            const tbody = document.getElementById('entries-body');
-            tbody.innerHTML = '';
-            let totalInvestment = 0;
+        function removeEntry(name, index) {
+            assets[name].entries.splice(index, 1);
+            if (assets[name].entries.length === 0) delete assets[name];
+            updateUI();
+        }
 
-            entries.forEach((entry, index) => {
-                const total = entry.price * entry.quantity;
-                totalInvestment += total;
-                tbody.innerHTML += `<tr>
-                    <td><span class="asset-tag">${entry.asset}</span> <small>${entry.order}</small></td>
-                    <td>${entry.quantity.toLocaleString('nl-BE')}</td>
-                    <td>€ ${entry.price.toLocaleString('nl-BE', {minimumFractionDigits: 2, maximumFractionDigits: 4})}</td>
-                    <td>€ ${total.toLocaleString('nl-BE', {minimumFractionDigits: 2})}</td>
-                    <td><button class="btn-remove" onclick="removeEntry(${index})">X</button></td>
-                </tr>`;
+        function updateCurrentPrice(name, val) {
+            assets[name].currentPrice = parseFloat(val) || 0;
+            updateUI(false); // Update stats but don't re-render everything if possible
+        }
+
+        function updateUI(reRenderList = true) {
+            const container = document.getElementById('assets-container');
+            if (reRenderList) container.innerHTML = '';
+
+            let globalNp1 = 0;
+            let globalNp2 = 0;
+
+            Object.keys(assets).forEach(name => {
+                const asset = assets[name];
+                let assetQty = 0;
+                let assetCost = 0;
+
+                const tableRows = asset.entries.map((e, i) => {
+                    assetQty += e.qty;
+                    assetCost += e.total;
+                    return `<tr>
+                        <td>${e.order} <span class="info-badge">FIFO #${i+1}</span></td>
+                        <td>${e.qty.toLocaleString('nl-BE')}</td>
+                        <td>€ ${e.price.toLocaleString('nl-BE', {minimumFractionDigits: 2})}</td>
+                        <td>€ ${e.total.toLocaleString('nl-BE', {minimumFractionDigits: 2})}</td>
+                        <td style="text-align:right"><button class="btn-remove" onclick="removeEntry('${name}', ${i})">X</button></td>
+                    </tr>`;
+                }).join('');
+
+                globalNp1 += assetCost;
+                globalNp2 += assetQty * asset.currentPrice;
+
+                if (reRenderList) {
+                    container.innerHTML += `
+                        <div class="asset-group">
+                            <div class="asset-header">
+                                <span class="asset-title">${name}</span>
+                                <div class="input-field">
+                                    <label>Huidige Prijs (€)</label>
+                                    <input type="number" class="current-price-input" value="${asset.currentPrice}" oninput="updateCurrentPrice('${name}', this.value)">
+                                </div>
+                            </div>
+                            <table>
+                                <thead><tr><th>Order (Volgorde)</th><th>Aantal</th><th>Prijs</th><th>Totaal</th><th></th></tr></thead>
+                                <tbody>${tableRows}</tbody>
+                                <tfoot>
+                                    <tr style="font-weight:700; background: #f8fafc;">
+                                        <td>TOTAAL ${name}</td>
+                                        <td>${assetQty.toLocaleString('nl-BE')}</td>
+                                        <td>-</td>
+                                        <td>€ ${assetCost.toLocaleString('nl-BE', {minimumFractionDigits: 2})}</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    `;
+                }
             });
 
-            document.getElementById('total-investment').innerText = `€ ${totalInvestment.toLocaleString('nl-BE', {minimumFractionDigits: 2})}`;
-            updateCharts(totalInvestment);
+            const gain = globalNp2 - globalNp1;
+            const tax = Math.max(gain - 10000, 0);
+
+            document.getElementById('stat-np1').innerText = `€ ${globalNp1.toLocaleString('nl-BE', {minimumFractionDigits: 2})}`;
+            document.getElementById('stat-np2').innerText = `€ ${globalNp2.toLocaleString('nl-BE', {minimumFractionDigits: 2})}`;
+            document.getElementById('stat-gain').innerText = `€ ${gain.toLocaleString('nl-BE', {minimumFractionDigits: 2})}`;
+            document.getElementById('stat-tax').innerText = `€ ${tax.toLocaleString('nl-BE', {minimumFractionDigits: 2})}`;
+
+            updateCharts(globalNp1);
         }
 
         function updateCharts(np1) {
-            if (entries.length === 0) {
-                if (valueChart) valueChart.destroy();
-                if (taxChart) taxChart.destroy();
-                return;
-            }
-
             const labels = [];
             const valueData = [];
-            const gainData = [];
             const taxData = [];
 
             for (let growth = -20; growth <= 300; growth += 10) {
                 const np2 = np1 * (1 + growth / 100);
                 const gain = np2 - np1;
                 const tax = Math.max(gain - 10000, 0);
-                
                 labels.push(`${growth}%`);
                 valueData.push(np2);
-                gainData.push(gain);
                 taxData.push(tax);
             }
 
-            // --- Value Chart ---
-            const ctxV = document.getElementById('valueChart').getContext('2d');
-            if (valueChart) valueChart.destroy();
-            valueChart = new Chart(ctxV, {
+            if (charts.value) charts.value.destroy();
+            charts.value = new Chart(document.getElementById('valueChart').getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'Totale Portefeuillewaarde (€)',
-                        data: valueData,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.05)',
-                        fill: true,
-                        tension: 0.3
-                    }]
+                    datasets: [{ label: 'Waarde (€)', data: valueData, borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.05)', fill: true, tension: 0.3 }]
                 },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: false, title: { display: true, text: 'Euro (€)' } } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // --- Tax & Gain Chart ---
-            const ctxT = document.getElementById('taxChart').getContext('2d');
-            if (taxChart) taxChart.destroy();
-            taxChart = new Chart(ctxT, {
+            if (charts.tax) charts.tax.destroy();
+            charts.tax = new Chart(document.getElementById('taxChart').getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [
-                        {
-                            label: 'Meerwaarde (€)',
-                            data: gainData,
-                            borderColor: '#64748b',
-                            borderDash: [5, 5],
-                            tension: 0.3
-                        },
-                        {
-                            label: 'Te betalen belasting (€)',
-                            data: taxData,
-                            borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            fill: true,
-                            tension: 0.3
-                        }
-                    ]
+                    datasets: [{ label: 'Belasting (€)', data: taxData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 }]
                 },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Euro (€)' } } }
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
     </script>
