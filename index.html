@@ -10,6 +10,7 @@
             --primary: #2563eb;
             --secondary: #64748b;
             --danger: #ef4444;
+            --success: #10b981;
             --bg: #f8fafc;
             --card: #ffffff;
             --text: #1e293b;
@@ -22,7 +23,7 @@
             color: var(--text);
             line-height: 1.5;
             padding: 1.5rem;
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
         }
         .card {
@@ -33,11 +34,11 @@
             margin-bottom: 2rem;
         }
         h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; text-align: center; color: var(--primary); }
-        h2 { font-size: 1.25rem; margin-top: 0; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+        h2 { font-size: 1.25rem; margin-top: 0; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; color: var(--secondary); }
         
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
             background: var(--accent);
@@ -46,7 +47,7 @@
             align-items: flex-end;
         }
         .input-field { display: flex; flex-direction: column; gap: 0.4rem; }
-        label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--secondary); }
+        label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--secondary); }
         input {
             padding: 0.6rem;
             border: 1px solid var(--border);
@@ -87,10 +88,15 @@
         .stat-label { font-size: 0.9rem; color: var(--secondary); }
         .stat-value { font-size: 1.5rem; font-weight: 800; }
         
-        .chart-section { height: 450px; margin-top: 1rem; }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+        .chart-container { height: 350px; position: relative; }
+        
         .info-text { font-size: 0.85rem; color: var(--secondary); text-align: center; margin-top: 1rem; }
         .asset-tag { display: inline-block; padding: 0.2rem 0.5rem; background: #e2e8f0; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-right: 0.5rem; }
-        
         .hint { font-size: 0.7rem; color: var(--secondary); font-weight: 400; text-transform: none; margin-top: -0.2rem; }
     </style>
 </head>
@@ -98,11 +104,11 @@
 
     <div class="card">
         <h1>Meerwaardebelasting Calculator</h1>
-        <p class="info-text">Bereken de belasting op uw vermogenswinst over de gehele portefeuille.</p>
+        <p class="info-text">Host je eigen berekening voor vermogenswinstbelasting.</p>
         
         <div class="form-grid">
             <div class="input-field">
-                <label>Asset <span class="hint">(bijv. BTC, AAPL)</span></label>
+                <label>Asset <span class="hint">(bv. BTC)</span></label>
                 <input type="text" id="asset-name" placeholder="Naam">
             </div>
             <div class="input-field">
@@ -146,27 +152,31 @@
             </div>
             <div class="stat">
                 <span class="stat-label">Vrijstellingsgrens</span>
-                <span class="stat-value" style="color: #059669;">€ 10.000,00</span>
+                <span class="stat-value" style="color: var(--success);">€ 10.000,00</span>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <h2>Grafiek: Belasting vs. Portefeuillewaarde</h2>
-        <div class="chart-section">
-            <canvas id="taxChart"></canvas>
+    <div class="charts-grid">
+        <div class="card">
+            <h2>Portefeuillewaarde</h2>
+            <div class="chart-container">
+                <canvas id="valueChart"></canvas>
+            </div>
         </div>
-        <p class="info-text">
-            De X-as toont de hypothetische groei (%) van uw gehele portefeuille.
-            <br>Formule: <strong>Belasting = max(Waarde - Investering - 10.000, 0)</strong>
-        </p>
+        <div class="card">
+            <h2>Meerwaarde & Belasting</h2>
+            <div class="chart-container">
+                <canvas id="taxChart"></canvas>
+            </div>
+        </div>
     </div>
 
     <script>
         let entries = [];
-        let chart = null;
+        let valueChart = null;
+        let taxChart = null;
 
-        // Smart recalculation logic
         function recalc(source) {
             const q = document.getElementById('buy-quantity');
             const p = document.getElementById('buy-price');
@@ -197,8 +207,6 @@
                     }
                 }
             }
-            
-            // Clean up visual cues if fields are cleared
             if (q.value === "") q.classList.remove('calculated');
             if (p.value === "") p.classList.remove('calculated');
             if (t.value === "") t.classList.remove('calculated');
@@ -211,10 +219,8 @@
             const total = parseFloat(document.getElementById('buy-total').value);
             const order = document.getElementById('buy-order').value || '-';
 
-            // Validation: We need at least two out of three (quantity, price, total)
             if (!isNaN(total) && !isNaN(quantity) && quantity > 0) {
-                const finalPrice = total / quantity;
-                entries.push({ asset, price: finalPrice, quantity, order });
+                entries.push({ asset, price: total/quantity, quantity, order });
                 updateUI();
                 clearInputs();
             } else if (!isNaN(price) && !isNaN(quantity) && quantity > 0) {
@@ -240,106 +246,98 @@
         function updateUI() {
             const tbody = document.getElementById('entries-body');
             tbody.innerHTML = '';
-            
             let totalInvestment = 0;
 
             entries.forEach((entry, index) => {
                 const total = entry.price * entry.quantity;
                 totalInvestment += total;
-
-                const row = `<tr>
+                tbody.innerHTML += `<tr>
                     <td><span class="asset-tag">${entry.asset}</span> <small>${entry.order}</small></td>
                     <td>${entry.quantity.toLocaleString('nl-BE')}</td>
                     <td>€ ${entry.price.toLocaleString('nl-BE', {minimumFractionDigits: 2, maximumFractionDigits: 4})}</td>
                     <td>€ ${total.toLocaleString('nl-BE', {minimumFractionDigits: 2})}</td>
-                    <td><button class="btn-remove" onclick="removeEntry(${index})">Verwijder</button></td>
+                    <td><button class="btn-remove" onclick="removeEntry(${index})">X</button></td>
                 </tr>`;
-                tbody.innerHTML += row;
             });
 
             document.getElementById('total-investment').innerText = `€ ${totalInvestment.toLocaleString('nl-BE', {minimumFractionDigits: 2})}`;
-            updateChart(totalInvestment);
+            updateCharts(totalInvestment);
         }
 
-        function updateChart(np1) {
-            const ctx = document.getElementById('taxChart').getContext('2d');
-            
+        function updateCharts(np1) {
             if (entries.length === 0) {
-                if (chart) chart.destroy();
+                if (valueChart) valueChart.destroy();
+                if (taxChart) taxChart.destroy();
                 return;
             }
 
             const labels = [];
-            const taxData = [];
             const valueData = [];
+            const gainData = [];
+            const taxData = [];
 
-            for (let growth = -20; growth <= 300; growth += 5) {
+            for (let growth = -20; growth <= 300; growth += 10) {
                 const np2 = np1 * (1 + growth / 100);
                 const gain = np2 - np1;
                 const tax = Math.max(gain - 10000, 0);
                 
                 labels.push(`${growth}%`);
-                taxData.push(tax);
                 valueData.push(np2);
+                gainData.push(gain);
+                taxData.push(tax);
             }
 
-            if (chart) chart.destroy();
+            // --- Value Chart ---
+            const ctxV = document.getElementById('valueChart').getContext('2d');
+            if (valueChart) valueChart.destroy();
+            valueChart = new Chart(ctxV, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Totale Portefeuillewaarde (€)',
+                        data: valueData,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.05)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: false, title: { display: true, text: 'Euro (€)' } } }
+                }
+            });
 
-            chart = new Chart(ctx, {
+            // --- Tax & Gain Chart ---
+            const ctxT = document.getElementById('taxChart').getContext('2d');
+            if (taxChart) taxChart.destroy();
+            taxChart = new Chart(ctxT, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
+                        {
+                            label: 'Meerwaarde (€)',
+                            data: gainData,
+                            borderColor: '#64748b',
+                            borderDash: [5, 5],
+                            tension: 0.3
+                        },
                         {
                             label: 'Te betalen belasting (€)',
                             data: taxData,
                             borderColor: '#ef4444',
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             fill: true,
-                            tension: 0.3,
-                            yAxisID: 'y',
-                        },
-                        {
-                            label: 'Totale Portefeuillewaarde (€)',
-                            data: valueData,
-                            borderColor: '#2563eb',
-                            borderDash: [5, 5],
-                            fill: false,
-                            tension: 0.3,
-                            yAxisID: 'y1',
+                            tension: 0.3
                         }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { intersect: false, mode: 'index' },
-                    scales: {
-                        x: { title: { display: true, text: 'Groei Portefeuille (%)' } },
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: { display: true, text: 'Belasting (€)' },
-                            beginAtZero: true
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: { display: true, text: 'Totale Waarde (€)' },
-                            grid: { drawOnChartArea: false }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': €' + context.parsed.y.toLocaleString('nl-BE', {minimumFractionDigits: 2});
-                                }
-                            }
-                        }
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Euro (€)' } } }
                 }
             });
         }
