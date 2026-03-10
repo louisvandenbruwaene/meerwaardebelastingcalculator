@@ -11,304 +11,204 @@
             --secondary: #64748b;
             --danger: #ef4444;
             --success: #10b981;
-            --bg: #f1f5f9;
+            --bg: #f8fafc;
             --card: #ffffff;
             --text: #0f172a;
             --border: #e2e8f0;
-            --accent: #f8fafc;
+            --accent: #f1f5f9;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg); color: var(--text); line-height: 1.5; padding: 1.5rem; max-width: 1200px; margin: 0 auto;
+            background-color: var(--bg); color: var(--text); line-height: 1.5; padding: 1.5rem; max-width: 1100px; margin: 0 auto;
         }
-        .card { background: var(--card); padding: 2rem; border-radius: 12px; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); margin-bottom: 2rem; }
+        .card { background: var(--card); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom: 2rem; border: 1px solid var(--border); }
         h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; text-align: center; color: var(--primary); }
-        h2 { font-size: 1.25rem; margin-top: 0; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; color: var(--secondary); display: flex; justify-content: space-between; align-items: center; }
+        h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
         
         /* Input Form */
         .form-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;
-            background: var(--accent); padding: 1.5rem; border-radius: 8px; align-items: flex-end; margin-bottom: 2rem;
-            border: 1px solid var(--border);
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;
+            background: var(--accent); padding: 1.25rem; border-radius: 8px; align-items: flex-end; margin-bottom: 2rem;
         }
         .input-field { display: flex; flex-direction: column; gap: 0.3rem; }
         label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--secondary); }
-        input { padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; transition: all 0.2s; background: white; }
+        input { padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; background: white; }
         input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        input.auto { color: #2563eb; font-weight: 600; background: #eff6ff; }
         
-        /* Status classes for inputs */
-        input.manual { border-left: 4px solid var(--primary); }
-        input.auto { background-color: #f0f9ff; color: #0369a1; border-color: #bae6fd; font-style: italic; }
-
         button { padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
         .btn-add { background-color: var(--primary); color: white; }
         .btn-add:hover { background-color: #1d4ed8; }
-        .btn-clear { background-color: #94a3b8; color: white; margin-left: 10px; }
-        .btn-remove { background-color: #fee2e2; color: var(--danger); padding: 0.3rem 0.6rem; font-size: 0.75rem; border-radius: 4px; }
-        .btn-remove:hover { background-color: var(--danger); color: white; }
+        .btn-clear { background-color: #94a3b8; color: white; font-size: 0.8rem; }
 
-        /* Asset Sections */
-        .asset-group { margin-bottom: 2.5rem; border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; background: white; }
-        .asset-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px dashed var(--border); }
-        .asset-title { font-size: 1.5rem; font-weight: 800; color: var(--text); }
+        /* Simulation Slider */
+        .sim-section { background: #1e293b; color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
+        .sim-control { flex: 1; min-width: 250px; }
+        .sim-label { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 700; font-size: 0.9rem; }
+        input[type=range] { width: 100%; height: 8px; border-radius: 5px; background: #475569; outline: none; -webkit-appearance: none; cursor: pointer; }
         
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
-        th { text-align: left; padding: 0.75rem; font-size: 0.75rem; color: var(--secondary); border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; }
-        td { padding: 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
-        tfoot tr { background: #f8fafc; font-weight: 700; }
-        
-        .summary-bar {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;
-            margin-top: 2rem; padding: 1.5rem; background: #0f172a; color: white; border-radius: 12px;
-        }
-        .stat { display: flex; flex-direction: column; }
-        .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
-        .stat-value { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; }
+        /* Stats Display */
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .stat-card { background: white; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+        .stat-label { font-size: 0.75rem; color: var(--secondary); font-weight: 700; text-transform: uppercase; }
+        .stat-value { font-size: 1.75rem; font-weight: 800; margin-top: 0.25rem; }
 
-        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
-        .chart-box { height: 350px; }
-        
-        .fifo-badge { font-size: 0.65rem; padding: 0.15rem 0.4rem; background: #e2e8f0; color: #475569; border-radius: 999px; font-weight: 700; margin-left: 8px; }
+        /* Assets Table */
+        .asset-group { margin-bottom: 1.5rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { text-align: left; padding: 0.75rem; color: var(--secondary); border-bottom: 2px solid var(--border); font-size: 0.75rem; text-transform: uppercase; }
+        td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+        tr.asset-summary { background: #f8fafc; font-weight: 700; }
+
+        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; }
+        .chart-box { height: 320px; }
+        .hint { font-size: 0.65rem; font-weight: 400; color: #f59e0b; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h1>Meerwaardebelasting Calculator</h1>
-        <p style="text-align: center; color: var(--secondary); margin-bottom: 2rem;">Host je eigen stabiele berekening. Inclusief FIFO-basis en slimme invoer.</p>
         
-        <!-- Stable Input Form -->
+        <!-- Input Section -->
         <div class="form-grid">
             <div class="input-field">
                 <label>Asset Naam</label>
-                <input type="text" id="in-asset" placeholder="bv. BTC" value="BTC">
+                <input type="text" id="in-asset" value="BTC">
             </div>
             <div class="input-field">
-                <label>Aantal <span class="hint" style="color: #f59e0b;">(gehele getallen aanbevolen)</span></label>
-                <input type="number" id="in-qty" placeholder="0" step="any" oninput="handleInput('qty')">
+                <label>Aantal <span class="hint">(geheel aanbevolen)</span></label>
+                <input type="number" id="in-qty" placeholder="0" oninput="triangulate('qty')">
             </div>
             <div class="input-field">
-                <label>Prijs per stuk (€)</label>
-                <input type="number" id="in-price" placeholder="0.00" step="any" oninput="handleInput('price')">
+                <label>Eenheidsprijs (€)</label>
+                <input type="number" id="in-price" placeholder="0.00" oninput="triangulate('price')">
             </div>
             <div class="input-field">
-                <label>Totaal Bedrag (€)</label>
-                <input type="number" id="in-total" placeholder="0.00" step="any" oninput="handleInput('total')">
+                <label>Totale Aankoop (€)</label>
+                <input type="number" id="in-total" placeholder="0.00" oninput="triangulate('total')">
             </div>
-            <div class="input-field">
-                <label>Order / Info</label>
-                <input type="text" id="in-order" placeholder="Optioneel">
-            </div>
-            <div style="display: flex;">
-                <button class="btn-add" onclick="addEntry()">Toevoegen</button>
-                <button class="btn-clear" onclick="clearForm()">Wis</button>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-add" onclick="addEntry()">Voeg toe</button>
+                <button class="btn-clear" onclick="resetForm()">Wis</button>
             </div>
         </div>
 
-        <div id="assets-container"></div>
+        <div id="asset-list"></div>
+    </div>
 
-        <div class="summary-bar">
-            <div class="stat">
-                <span class="stat-label">Totale Investering</span>
+    <!-- Simulation Controls -->
+    <div class="sim-section">
+        <div class="sim-control">
+            <div class="sim-label">
+                <span>SIMULATIE: Portefeuille Groei</span>
+                <span id="growth-pct" style="color: var(--success);">+0%</span>
+            </div>
+            <input type="range" id="growth-slider" min="-50" max="300" value="0" oninput="updateSimulation()">
+        </div>
+        <div class="summary-grid" style="flex: 2;">
+            <div class="stat-card">
+                <span class="stat-label">Investering (np₁)</span>
                 <span class="stat-value" id="stat-np1">€ 0,00</span>
             </div>
-            <div class="stat">
-                <span class="stat-label">Huidige Waarde</span>
-                <span class="stat-value" id="stat-np2" style="color: #60a5fa;">€ 0,00</span>
+            <div class="stat-card">
+                <span class="stat-label">Nieuwe Waarde (np₂)</span>
+                <span class="stat-value" id="stat-np2">€ 0,00</span>
             </div>
-            <div class="stat">
-                <span class="stat-label">Totale Meerwaarde</span>
-                <span class="stat-value" id="stat-gain" style="color: var(--success);">€ 0,00</span>
+            <div class="stat-card">
+                <span class="stat-label">Belasting</span>
+                <span class="stat-value" id="stat-tax" style="color: var(--danger);">€ 0,00</span>
             </div>
-            <div class="stat">
-                <span class="stat-label">Belasting (> €10k)</span>
-                <span class="stat-value" id="stat-tax" style="color: #f87171;">€ 0,00</span>
-            </div>
-        <p class="info-text" style="color: #f59e0b; font-weight: 600;">
-            Opmerking: Hoewel kommagetallen worden ondersteund voor fractionele activa (zoals crypto), zijn voor de meeste traditionele effecten gehele getallen de standaard.
-        </p>
+        </div>
     </div>
 
     <div class="charts-container">
         <div class="card">
-            <h2>Groeiprojectie Waarde</h2>
-            <div class="chart-box"><canvas id="valueChart"></canvas></div>
-        </div>
-        <div class="card">
             <h2>Groeiprojectie Belasting</h2>
             <div class="chart-box"><canvas id="taxChart"></canvas></div>
+        </div>
+        <div class="card">
+            <h2>Portefeuille Waarde</h2>
+            <div class="chart-box"><canvas id="valueChart"></canvas></div>
         </div>
     </div>
 
     <script>
-        let assets = {}; 
-        let charts = { value: null, tax: null };
-        
-        // Input state tracking
-        let lastEdited = []; // Track up to 2 most recently edited fields
+        let entries = [];
+        let charts = { tax: null, value: null };
+        let lastEdited = [];
 
-        function handleInput(fieldId) {
-            const el = document.getElementById('in-' + fieldId);
-            
-            // Mark as manual
-            el.classList.add('manual');
-            el.classList.remove('auto');
-
-            // Update lastEdited queue
-            lastEdited = lastEdited.filter(f => f !== fieldId);
-            lastEdited.push(fieldId);
+        function triangulate(id) {
+            const qty = document.getElementById('in-qty'), price = document.getElementById('in-price'), total = document.getElementById('in-total');
+            lastEdited = lastEdited.filter(f => f !== id);
+            lastEdited.push(id);
             if (lastEdited.length > 2) lastEdited.shift();
 
-            triangulate();
-        }
+            const q = parseFloat(qty.value), p = parseFloat(price.value), t = parseFloat(total.value);
+            if (lastEdited.length < 2) return;
 
-        function triangulate() {
-            const qty = document.getElementById('in-qty');
-            const price = document.getElementById('in-price');
-            const total = document.getElementById('in-total');
-
-            const qVal = parseFloat(qty.value);
-            const pVal = parseFloat(price.value);
-            const tVal = parseFloat(total.value);
-
-            // We only calculate if we have exactly 2 valid numbers
-            const validFields = lastEdited.filter(f => !isNaN(parseFloat(document.getElementById('in-' + f).value)));
+            const solveFor = ['qty', 'price', 'total'].find(f => !lastEdited.includes(f));
+            if (solveFor === 'total') total.value = (q * p).toFixed(2);
+            else if (solveFor === 'price') price.value = (t / q).toFixed(4);
+            else if (solveFor === 'qty') qty.value = (t / p).toFixed(6);
             
-            if (validFields.length < 2) return;
-
-            // Determine which field to solve for (the one not in validFields)
-            const all = ['qty', 'price', 'total'];
-            const solveFor = all.find(f => !validFields.includes(f));
-
-            if (solveFor === 'total') {
-                const res = qVal * pVal;
-                total.value = isFinite(res) ? res.toFixed(2) : '';
-                total.className = 'auto';
-            } else if (solveFor === 'price') {
-                const res = tVal / qVal;
-                price.value = (isFinite(res) && qVal !== 0) ? res.toFixed(4) : '';
-                price.className = 'auto';
-            } else if (solveFor === 'qty') {
-                const res = tVal / pVal;
-                qty.value = (isFinite(res) && pVal !== 0) ? res.toFixed(6) : '';
-                qty.className = 'auto';
-            }
+            [qty, price, total].forEach(el => el.classList.toggle('auto', el.value !== '' && !lastEdited.includes(el.id.replace('in-', ''))));
         }
 
-        function clearForm() {
-            ['in-qty', 'in-price', 'in-total', 'in-order'].forEach(id => {
-                const el = document.getElementById(id);
-                el.value = '';
-                el.className = '';
+        function addEntry() {
+            const asset = document.getElementById('in-asset').value.toUpperCase() || 'ASSET';
+            const qty = parseFloat(document.getElementById('in-qty').value);
+            const total = parseFloat(document.getElementById('in-total').value);
+            if (isNaN(qty) || isNaN(total) || qty <= 0) return;
+
+            entries.push({ asset, qty, total, price: total/qty });
+            updateUI();
+            resetForm();
+        }
+
+        function resetForm() {
+            ['in-qty', 'in-price', 'in-total'].forEach(id => {
+                const el = document.getElementById(id); el.value = ''; el.className = '';
             });
             lastEdited = [];
         }
 
-        function addEntry() {
-            const name = document.getElementById('in-asset').value.toUpperCase().trim() || 'ASSET';
-            const qty = parseFloat(document.getElementById('in-qty').value);
-            const price = parseFloat(document.getElementById('in-price').value);
-            const total = parseFloat(document.getElementById('in-total').value);
-            const order = document.getElementById('in-order').value || '-';
+        function updateSimulation() {
+            const growth = parseFloat(document.getElementById('growth-slider').value);
+            document.getElementById('growth-pct').innerText = (growth >= 0 ? '+' : '') + growth + '%';
+            updateUI(false);
+        }
 
-            if (isNaN(qty) || isNaN(total) || qty <= 0) {
-                alert("Ongeldige invoer. Zorg voor een geldig aantal en totaalbedrag.");
-                return;
+        function updateUI(reRenderTable = true) {
+            let totalNp1 = 0;
+            const growth = 1 + (parseFloat(document.getElementById('growth-slider').value) / 100);
+
+            if (reRenderTable) {
+                const list = document.getElementById('asset-list');
+                list.innerHTML = '';
+                const groups = entries.reduce((acc, e) => { (acc[e.asset] = acc[e.asset] || []).push(e); return acc; }, {});
+                
+                Object.keys(groups).forEach(name => {
+                    let aQty = 0, aCost = 0;
+                    const rows = groups[name].map(e => {
+                        aQty += e.qty; aCost += e.total;
+                        return `<tr><td>${name}</td><td>${e.qty}</td><td>€${e.price.toFixed(2)}</td><td>€${e.total.toFixed(2)}</td></tr>`;
+                    }).join('');
+                    totalNp1 += aCost;
+                    list.innerHTML += `<div class="asset-group"><h2>${name}</h2><table><thead><tr><th>Asset</th><th>Aantal</th><th>Prijs</th><th>Totaal</th></tr></thead><tbody>${rows}</tbody><tr class="asset-summary"><td>Totaal ${name}</td><td>${aQty}</td><td>Gem: €${(aCost/aQty).toFixed(2)}</td><td>€${aCost.toFixed(2)}</td></tr></table></div>`;
+                });
+            } else {
+                totalNp1 = entries.reduce((sum, e) => sum + e.total, 0);
             }
 
-            if (!assets[name]) assets[name] = { currentPrice: price || 0, entries: [] };
-            
-            assets[name].entries.push({ qty, price: total/qty, total, order, time: Date.now() });
-            assets[name].entries.sort((a, b) => a.time - b.time);
-            
-            updateUI();
-            clearForm();
-        }
+            const totalNp2 = totalNp1 * growth;
+            const tax = Math.max(totalNp2 - totalNp1 - 10000, 0);
 
-        function removeEntry(name, index) {
-            assets[name].entries.splice(index, 1);
-            if (assets[name].entries.length === 0) delete assets[name];
-            updateUI();
-        }
+            document.getElementById('stat-np1').innerText = '€' + totalNp1.toLocaleString('nl-BE', {minimumFractionDigits: 2});
+            document.getElementById('stat-np2').innerText = '€' + totalNp2.toLocaleString('nl-BE', {minimumFractionDigits: 2});
+            document.getElementById('stat-tax').innerText = '€' + tax.toLocaleString('nl-BE', {minimumFractionDigits: 2});
 
-        function updateCurrentPrice(name, val) {
-            assets[name].currentPrice = parseFloat(val) || 0;
-            updateUI(false); 
-        }
-
-        function formatEuro(val) {
-            return new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR' }).format(val);
-        }
-
-        function updateUI(reRenderList = true) {
-            const container = document.getElementById('assets-container');
-            if (reRenderList) container.innerHTML = '';
-
-            let globalNp1 = 0;
-            let globalNp2 = 0;
-
-            Object.keys(assets).sort().forEach(name => {
-                const asset = assets[name];
-                let assetQty = 0;
-                let assetCost = 0;
-
-                const rows = asset.entries.map((e, i) => {
-                    assetQty += e.qty;
-                    assetCost += e.total;
-                    return `<tr>
-                        <td>${e.order} <span class="fifo-badge">FIFO #${i+1}</span></td>
-                        <td>${Number(e.qty.toFixed(8))}</td>
-                        <td>${formatEuro(e.price)}</td>
-                        <td>${formatEuro(e.total)}</td>
-                        <td style="text-align:right"><button class="btn-remove" onclick="removeEntry('${name}', ${i})">Wis</button></td>
-                    </tr>`;
-                }).join('');
-
-                globalNp1 += assetCost;
-                globalNp2 += assetQty * asset.currentPrice;
-
-                if (reRenderList) {
-                    container.innerHTML += `
-                        <div class="asset-group">
-                            <div class="asset-header">
-                                <span class="asset-title">${name}</span>
-                                <div class="input-field" style="flex-direction:row; align-items:center; gap:10px;">
-                                    <label>Huidige Prijs:</label>
-                                    <input type="number" step="any" value="${asset.currentPrice}" 
-                                           style="width:120px; font-weight:700;"
-                                           oninput="updateCurrentPrice('${name}', this.value)">
-                                </div>
-                            </div>
-                            <div class="table-container">
-                                <table>
-                                    <thead><tr><th>Order Info</th><th>Aantal</th><th>Eenheidsprijs</th><th>Totaal</th><th></th></tr></thead>
-                                    <tbody>${rows}</tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <td>TOTAAL ${name}</td>
-                                            <td>${Number(assetQty.toFixed(8))}</td>
-                                            <td>Gem: ${formatEuro(assetCost/assetQty)}</td>
-                                            <td>${formatEuro(assetCost)}</td>
-                                            <td></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
-                    `;
-                }
-            });
-
-            const gain = globalNp2 - globalNp1;
-            const tax = Math.max(gain - 10000, 0);
-
-            document.getElementById('stat-np1').innerText = formatEuro(globalNp1);
-            document.getElementById('stat-np2').innerText = formatEuro(globalNp2);
-            document.getElementById('stat-gain').innerText = formatEuro(gain);
-            document.getElementById('stat-tax').innerText = formatEuro(tax);
-
-            updateCharts(globalNp1);
+            updateCharts(totalNp1);
         }
 
         function updateCharts(np1) {
@@ -320,17 +220,17 @@
                 tData.push(Math.max(np2 - np1 - 10000, 0));
             }
 
-            if (charts.value) charts.value.destroy();
-            charts.value = new Chart(document.getElementById('valueChart'), {
-                type: 'line',
-                data: { labels, datasets: [{ label: 'Waarde (€)', data: vData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', fill: true, tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-
             if (charts.tax) charts.tax.destroy();
             charts.tax = new Chart(document.getElementById('taxChart'), {
                 type: 'line',
                 data: { labels, datasets: [{ label: 'Belasting (€)', data: tData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            if (charts.value) charts.value.destroy();
+            charts.value = new Chart(document.getElementById('valueChart'), {
+                type: 'line',
+                data: { labels, datasets: [{ label: 'Waarde (€)', data: vData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', fill: true, tension: 0.3 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
