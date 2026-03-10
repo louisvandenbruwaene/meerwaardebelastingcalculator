@@ -14,6 +14,7 @@
             --card: #ffffff;
             --text: #1e293b;
             --border: #e2e8f0;
+            --accent: #f1f5f9;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -36,10 +37,10 @@
         
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
-            background: #f1f5f9;
+            background: var(--accent);
             padding: 1.5rem;
             border-radius: 8px;
             align-items: flex-end;
@@ -51,9 +52,10 @@
             border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 1rem;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
-        input:focus { outline: none; border-color: var(--primary); }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        input.calculated { background-color: #f8fafc; color: #64748b; font-style: italic; }
         
         button {
             padding: 0.6rem 1.2rem;
@@ -68,7 +70,8 @@
         .btn-remove { background-color: #fee2e2; color: var(--danger); padding: 0.3rem 0.6rem; font-size: 0.8rem; }
         .btn-remove:hover { background-color: var(--danger); color: white; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; min-width: 600px; }
         th { text-align: left; padding: 1rem; font-size: 0.85rem; color: var(--secondary); border-bottom: 2px solid var(--border); }
         td { padding: 1rem; border-bottom: 1px solid var(--border); }
         
@@ -85,58 +88,56 @@
         .stat-value { font-size: 1.5rem; font-weight: 800; }
         
         .chart-section { height: 450px; margin-top: 1rem; }
-        
         .info-text { font-size: 0.85rem; color: var(--secondary); text-align: center; margin-top: 1rem; }
+        .asset-tag { display: inline-block; padding: 0.2rem 0.5rem; background: #e2e8f0; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-right: 0.5rem; }
         
-        .asset-tag {
-            display: inline-block;
-            padding: 0.2rem 0.5rem;
-            background: #e2e8f0;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-right: 0.5rem;
-        }
+        .hint { font-size: 0.7rem; color: var(--secondary); font-weight: 400; text-transform: none; margin-top: -0.2rem; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h1>Meerwaardebelasting Calculator</h1>
-        <p class="info-text">Bereken de potentiële belasting op uw vermogenswinst over alle activa.</p>
+        <p class="info-text">Bereken de belasting op uw vermogenswinst over de gehele portefeuille.</p>
         
         <div class="form-grid">
             <div class="input-field">
-                <label>Asset (bijv. BTC, AAPL)</label>
+                <label>Asset <span class="hint">(bijv. BTC, AAPL)</span></label>
                 <input type="text" id="asset-name" placeholder="Naam">
             </div>
             <div class="input-field">
-                <label>Aankoopprijs (€)</label>
-                <input type="number" id="buy-price" placeholder="0.00" step="0.01">
-            </div>
-            <div class="input-field">
                 <label>Aantal</label>
-                <input type="number" id="buy-quantity" placeholder="0" step="0.01">
+                <input type="number" id="buy-quantity" placeholder="0" step="any" oninput="recalc('quantity')">
             </div>
             <div class="input-field">
-                <label>Order info</label>
+                <label>Eenheidsprijs (€)</label>
+                <input type="number" id="buy-price" placeholder="0.00" step="any" oninput="recalc('price')">
+            </div>
+            <div class="input-field">
+                <label>Totale Aankoop (€)</label>
+                <input type="number" id="buy-total" placeholder="0.00" step="any" oninput="recalc('total')">
+            </div>
+            <div class="input-field">
+                <label>Order / Datum</label>
                 <input type="text" id="buy-order" placeholder="Optioneel">
             </div>
             <button class="btn-add" onclick="addEntry()">Toevoegen</button>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Asset & Order</th>
-                    <th>Aankoopprijs</th>
-                    <th>Aantal</th>
-                    <th>Totaal Betaald</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody id="entries-body"></tbody>
-        </table>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Asset & Order</th>
+                        <th>Aantal</th>
+                        <th>Eenheidsprijs</th>
+                        <th>Totaal Betaald</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="entries-body"></tbody>
+            </table>
+        </div>
 
         <div class="summary-box">
             <div class="stat">
@@ -156,7 +157,7 @@
             <canvas id="taxChart"></canvas>
         </div>
         <p class="info-text">
-            De X-as toont de hypothetische groei (%) van uw gehele portefeuille ten opzichte van de aankoopprijs.
+            De X-as toont de hypothetische groei (%) van uw gehele portefeuille.
             <br>Formule: <strong>Belasting = max(Waarde - Investering - 10.000, 0)</strong>
         </p>
     </div>
@@ -165,13 +166,58 @@
         let entries = [];
         let chart = null;
 
+        // Smart recalculation logic
+        function recalc(source) {
+            const q = document.getElementById('buy-quantity');
+            const p = document.getElementById('buy-price');
+            const t = document.getElementById('buy-total');
+
+            const quantity = parseFloat(q.value);
+            const price = parseFloat(p.value);
+            const total = parseFloat(t.value);
+
+            if (source === 'quantity' || source === 'price') {
+                if (!isNaN(quantity) && !isNaN(price)) {
+                    t.value = (quantity * price).toFixed(4);
+                    t.classList.add('calculated');
+                } else {
+                    t.classList.remove('calculated');
+                }
+            } else if (source === 'total') {
+                t.classList.remove('calculated');
+                if (!isNaN(total)) {
+                    if (!isNaN(quantity) && quantity !== 0) {
+                        p.value = (total / quantity).toFixed(4);
+                        p.classList.add('calculated');
+                        q.classList.remove('calculated');
+                    } else if (!isNaN(price) && price !== 0) {
+                        q.value = (total / price).toFixed(4);
+                        q.classList.add('calculated');
+                        p.classList.remove('calculated');
+                    }
+                }
+            }
+            
+            // Clean up visual cues if fields are cleared
+            if (q.value === "") q.classList.remove('calculated');
+            if (p.value === "") p.classList.remove('calculated');
+            if (t.value === "") t.classList.remove('calculated');
+        }
+
         function addEntry() {
             const asset = document.getElementById('asset-name').value || 'Asset';
             const price = parseFloat(document.getElementById('buy-price').value);
             const quantity = parseFloat(document.getElementById('buy-quantity').value);
+            const total = parseFloat(document.getElementById('buy-total').value);
             const order = document.getElementById('buy-order').value || '-';
 
-            if (!isNaN(price) && !isNaN(quantity) && quantity > 0) {
+            // Validation: We need at least two out of three (quantity, price, total)
+            if (!isNaN(total) && !isNaN(quantity) && quantity > 0) {
+                const finalPrice = total / quantity;
+                entries.push({ asset, price: finalPrice, quantity, order });
+                updateUI();
+                clearInputs();
+            } else if (!isNaN(price) && !isNaN(quantity) && quantity > 0) {
                 entries.push({ asset, price, quantity, order });
                 updateUI();
                 clearInputs();
@@ -186,8 +232,9 @@
         function clearInputs() {
             document.getElementById('buy-price').value = '';
             document.getElementById('buy-quantity').value = '';
+            document.getElementById('buy-total').value = '';
             document.getElementById('buy-order').value = '';
-            // We keep the asset name for quick repeated entries
+            document.querySelectorAll('input').forEach(i => i.classList.remove('calculated'));
         }
 
         function updateUI() {
@@ -202,8 +249,8 @@
 
                 const row = `<tr>
                     <td><span class="asset-tag">${entry.asset}</span> <small>${entry.order}</small></td>
-                    <td>€ ${entry.price.toLocaleString('nl-BE', {minimumFractionDigits: 2})}</td>
-                    <td>${entry.quantity}</td>
+                    <td>${entry.quantity.toLocaleString('nl-BE')}</td>
+                    <td>€ ${entry.price.toLocaleString('nl-BE', {minimumFractionDigits: 2, maximumFractionDigits: 4})}</td>
                     <td>€ ${total.toLocaleString('nl-BE', {minimumFractionDigits: 2})}</td>
                     <td><button class="btn-remove" onclick="removeEntry(${index})">Verwijder</button></td>
                 </tr>`;
@@ -222,12 +269,11 @@
                 return;
             }
 
-            // X-axis will be Portfolio Growth from -50% to +300% (or more if needed)
             const labels = [];
             const taxData = [];
             const valueData = [];
 
-            for (let growth = -20; growth <= 200; growth += 5) {
+            for (let growth = -20; growth <= 300; growth += 5) {
                 const np2 = np1 * (1 + growth / 100);
                 const gain = np2 - np1;
                 const tax = Math.max(gain - 10000, 0);
@@ -269,9 +315,7 @@
                     maintainAspectRatio: false,
                     interaction: { intersect: false, mode: 'index' },
                     scales: {
-                        x: {
-                            title: { display: true, text: 'Groei Portefeuille (%)' }
-                        },
+                        x: { title: { display: true, text: 'Groei Portefeuille (%)' } },
                         y: {
                             type: 'linear',
                             display: true,
