@@ -219,14 +219,37 @@
             charts.tax = new Chart(document.getElementById('taxChart'), {
                 type: 'line',
                 data: { labels, datasets: [{ label: 'Belasting (€)', data: tData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: {
+                                color: (context) => context.tick && context.tick.label === '0%' ? 'rgba(15, 23, 42, 0.5)' : 'rgba(0,0,0,0.1)',
+                                lineWidth: (context) => context.tick && context.tick.label === '0%' ? 2 : 1
+                            }
+                        }
+                    }
+                }
             });
 
             if (charts.value) charts.value.destroy();
             charts.value = new Chart(document.getElementById('valueChart'), {
                 type: 'line',
                 data: { labels, datasets: [{ label: 'Waarde (€)', data: vData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', fill: true, tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: (context) => context.tick && context.tick.label === '0%' ? 'rgba(15, 23, 42, 0.5)' : 'rgba(0,0,0,0.1)',
+                                lineWidth: (context) => context.tick && context.tick.label === '0%' ? 2 : 1
+                            }
+                        }
+                    }
+                }
             });
         }
     </script>
