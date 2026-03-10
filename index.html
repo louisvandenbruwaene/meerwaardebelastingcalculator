@@ -85,8 +85,8 @@
                 <input type="text" id="in-asset" placeholder="bv. BTC" value="BTC">
             </div>
             <div class="input-field">
-                <label>Aantal</label>
-                <input type="number" id="in-qty" placeholder="0.00" step="any" oninput="handleInput('qty')">
+                <label>Aantal <span class="hint" style="color: #f59e0b;">(gehele getallen aanbevolen)</span></label>
+                <input type="number" id="in-qty" placeholder="0" step="any" oninput="handleInput('qty')">
             </div>
             <div class="input-field">
                 <label>Prijs per stuk (€)</label>
@@ -125,7 +125,9 @@
                 <span class="stat-label">Belasting (> €10k)</span>
                 <span class="stat-value" id="stat-tax" style="color: #f87171;">€ 0,00</span>
             </div>
-        </div>
+        <p class="info-text" style="color: #f59e0b; font-weight: 600;">
+            Opmerking: Hoewel kommagetallen worden ondersteund voor fractionele activa (zoals crypto), zijn voor de meeste traditionele effecten gehele getallen de standaard.
+        </p>
     </div>
 
     <div class="charts-container">
