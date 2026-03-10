@@ -11,195 +11,217 @@
             --secondary: #64748b;
             --danger: #ef4444;
             --success: #10b981;
-            --bg: #f8fafc;
+            --bg: #f1f5f9;
             --card: #ffffff;
-            --text: #1e293b;
+            --text: #0f172a;
             --border: #e2e8f0;
-            --accent: #f1f5f9;
+            --accent: #f8fafc;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg); color: var(--text); line-height: 1.5; padding: 1.5rem; max-width: 1200px; margin: 0 auto;
         }
-        .card { background: var(--card); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom: 2rem; }
+        .card { background: var(--card); padding: 2rem; border-radius: 12px; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); margin-bottom: 2rem; }
         h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; text-align: center; color: var(--primary); }
-        h2 { font-size: 1.25rem; margin-top: 0; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; color: var(--secondary); display: flex; justify-content: space-between; }
+        h2 { font-size: 1.25rem; margin-top: 0; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; color: var(--secondary); display: flex; justify-content: space-between; align-items: center; }
         
         /* Input Form */
         .form-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;
             background: var(--accent); padding: 1.5rem; border-radius: 8px; align-items: flex-end; margin-bottom: 2rem;
+            border: 1px solid var(--border);
         }
         .input-field { display: flex; flex-direction: column; gap: 0.3rem; }
         label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--secondary); }
-        input { padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; transition: all 0.2s; }
+        input { padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; transition: all 0.2s; background: white; }
         input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        input.auto-filled { background-color: #f0f9ff; color: #0369a1; border-color: #bae6fd; font-weight: 600; }
         
+        /* Status classes for inputs */
+        input.manual { border-left: 4px solid var(--primary); }
+        input.auto { background-color: #f0f9ff; color: #0369a1; border-color: #bae6fd; font-style: italic; }
+
         button { padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
         .btn-add { background-color: var(--primary); color: white; }
         .btn-add:hover { background-color: #1d4ed8; }
-        .btn-remove { background-color: #fee2e2; color: var(--danger); padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+        .btn-clear { background-color: #94a3b8; color: white; margin-left: 10px; }
+        .btn-remove { background-color: #fee2e2; color: var(--danger); padding: 0.3rem 0.6rem; font-size: 0.75rem; border-radius: 4px; }
         .btn-remove:hover { background-color: var(--danger); color: white; }
 
         /* Asset Sections */
-        .asset-group { margin-bottom: 2.5rem; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
-        .asset-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .asset-title { font-size: 1.25rem; font-weight: 700; color: var(--text); }
-        .current-price-input { width: 120px; font-size: 1rem; font-weight: 700; text-align: right; }
-
+        .asset-group { margin-bottom: 2.5rem; border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; background: white; }
+        .asset-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px dashed var(--border); }
+        .asset-title { font-size: 1.5rem; font-weight: 800; color: var(--text); }
+        
+        .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
-        th { text-align: left; padding: 0.75rem; font-size: 0.75rem; color: var(--secondary); border-bottom: 1px solid var(--border); text-transform: uppercase; }
-        td { padding: 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        th { text-align: left; padding: 0.75rem; font-size: 0.75rem; color: var(--secondary); border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; }
+        td { padding: 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        tfoot tr { background: #f8fafc; font-weight: 700; }
         
         .summary-bar {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
-            margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--border);
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;
+            margin-top: 2rem; padding: 1.5rem; background: #0f172a; color: white; border-radius: 12px;
         }
         .stat { display: flex; flex-direction: column; }
-        .stat-label { font-size: 0.8rem; color: var(--secondary); }
-        .stat-value { font-size: 1.5rem; font-weight: 800; }
+        .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
+        .stat-value { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; }
 
-        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; }
+        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
         .chart-box { height: 350px; }
         
-        .info-badge { font-size: 0.7rem; padding: 0.2rem 0.4rem; background: #e2e8f0; border-radius: 4px; vertical-align: middle; margin-left: 5px; }
+        .fifo-badge { font-size: 0.65rem; padding: 0.15rem 0.4rem; background: #e2e8f0; color: #475569; border-radius: 999px; font-weight: 700; margin-left: 8px; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h1>Meerwaardebelasting Calculator</h1>
-        <p style="text-align: center; color: var(--secondary); margin-bottom: 2rem;">Host je eigen berekening. Inclusief FIFO-principe en automatische veld-aanvulling.</p>
+        <p style="text-align: center; color: var(--secondary); margin-bottom: 2rem;">Host je eigen stabiele berekening. Inclusief FIFO-basis en slimme invoer.</p>
         
-        <!-- Smart Input Form -->
-        <div class="form-grid" id="input-form">
+        <!-- Stable Input Form -->
+        <div class="form-grid">
             <div class="input-field">
                 <label>Asset Naam</label>
                 <input type="text" id="in-asset" placeholder="bv. BTC" value="BTC">
             </div>
             <div class="input-field">
                 <label>Aantal</label>
-                <input type="number" id="in-qty" placeholder="0.00" step="any">
+                <input type="number" id="in-qty" placeholder="0.00" step="any" oninput="handleInput('qty')">
             </div>
             <div class="input-field">
                 <label>Prijs per stuk (€)</label>
-                <input type="number" id="in-price" placeholder="0.00" step="any">
+                <input type="number" id="in-price" placeholder="0.00" step="any" oninput="handleInput('price')">
             </div>
             <div class="input-field">
                 <label>Totaal Bedrag (€)</label>
-                <input type="number" id="in-total" placeholder="0.00" step="any">
+                <input type="number" id="in-total" placeholder="0.00" step="any" oninput="handleInput('total')">
             </div>
             <div class="input-field">
-                <label>Order / Datum</label>
+                <label>Order / Info</label>
                 <input type="text" id="in-order" placeholder="Optioneel">
             </div>
-            <button class="btn-add" onclick="addEntry()">Toevoegen</button>
+            <div style="display: flex;">
+                <button class="btn-add" onclick="addEntry()">Toevoegen</button>
+                <button class="btn-clear" onclick="clearForm()">Wis</button>
+            </div>
         </div>
 
-        <div id="assets-container">
-            <!-- Asset groups will be injected here -->
-        </div>
+        <div id="assets-container"></div>
 
         <div class="summary-bar">
             <div class="stat">
-                <span class="stat-label">Totale Investering (np₁)</span>
+                <span class="stat-label">Totale Investering</span>
                 <span class="stat-value" id="stat-np1">€ 0,00</span>
             </div>
             <div class="stat">
-                <span class="stat-label">Huidige Waarde (np₂)</span>
-                <span class="stat-value" id="stat-np2" style="color: var(--primary);">€ 0,00</span>
+                <span class="stat-label">Huidige Waarde</span>
+                <span class="stat-value" id="stat-np2" style="color: #60a5fa;">€ 0,00</span>
             </div>
             <div class="stat">
-                <span class="stat-label">Belastbare Meerwaarde</span>
+                <span class="stat-label">Totale Meerwaarde</span>
                 <span class="stat-value" id="stat-gain" style="color: var(--success);">€ 0,00</span>
             </div>
             <div class="stat">
-                <span class="stat-label">Geschatte Belasting</span>
-                <span class="stat-value" id="stat-tax" style="color: var(--danger);">€ 0,00</span>
+                <span class="stat-label">Belasting (> €10k)</span>
+                <span class="stat-value" id="stat-tax" style="color: #f87171;">€ 0,00</span>
             </div>
         </div>
     </div>
 
     <div class="charts-container">
         <div class="card">
-            <h2>Portefeuillewaarde (Provisie)</h2>
+            <h2>Groeiprojectie Waarde</h2>
             <div class="chart-box"><canvas id="valueChart"></canvas></div>
         </div>
         <div class="card">
-            <h2>Belasting-Trend</h2>
+            <h2>Groeiprojectie Belasting</h2>
             <div class="chart-box"><canvas id="taxChart"></canvas></div>
         </div>
     </div>
 
     <script>
-        let assets = {}; // { 'BTC': { currentPrice: 0, entries: [...] } }
+        let assets = {}; 
         let charts = { value: null, tax: null };
+        
+        // Input state tracking
+        let lastEdited = []; // Track up to 2 most recently edited fields
 
-        // --- Smart Input Triangulation ---
-        const fields = ['in-qty', 'in-price', 'in-total'];
-        fields.forEach(id => {
-            document.getElementById(id).addEventListener('input', () => triangulate(id));
-        });
+        function handleInput(fieldId) {
+            const el = document.getElementById('in-' + fieldId);
+            
+            // Mark as manual
+            el.classList.add('manual');
+            el.classList.remove('auto');
 
-        function triangulate(sourceId) {
+            // Update lastEdited queue
+            lastEdited = lastEdited.filter(f => f !== fieldId);
+            lastEdited.push(fieldId);
+            if (lastEdited.length > 2) lastEdited.shift();
+
+            triangulate();
+        }
+
+        function triangulate() {
             const qty = document.getElementById('in-qty');
             const price = document.getElementById('in-price');
             const total = document.getElementById('in-total');
-
-            // Clear 'auto-filled' style from all except maybe the one we are about to fill
-            fields.forEach(f => document.getElementById(f).classList.remove('auto-filled'));
 
             const qVal = parseFloat(qty.value);
             const pVal = parseFloat(price.value);
             const tVal = parseFloat(total.value);
 
-            if (sourceId === 'in-qty' || sourceId === 'in-price') {
-                if (!isNaN(qVal) && !isNaN(pVal)) {
-                    total.value = (qVal * pVal).toFixed(4);
-                    total.classList.add('auto-filled');
-                }
-            } else if (sourceId === 'in-total') {
-                if (!isNaN(tVal)) {
-                    if (!isNaN(qVal) && qVal !== 0) {
-                        price.value = (tVal / qVal).toFixed(4);
-                        price.classList.add('auto-filled');
-                    } else if (!isNaN(pVal) && pVal !== 0) {
-                        qty.value = (tVal / pVal).toFixed(4);
-                        qty.classList.add('auto-filled');
-                    }
-                }
+            // We only calculate if we have exactly 2 valid numbers
+            const validFields = lastEdited.filter(f => !isNaN(parseFloat(document.getElementById('in-' + f).value)));
+            
+            if (validFields.length < 2) return;
+
+            // Determine which field to solve for (the one not in validFields)
+            const all = ['qty', 'price', 'total'];
+            const solveFor = all.find(f => !validFields.includes(f));
+
+            if (solveFor === 'total') {
+                const res = qVal * pVal;
+                total.value = isFinite(res) ? res.toFixed(2) : '';
+                total.className = 'auto';
+            } else if (solveFor === 'price') {
+                const res = tVal / qVal;
+                price.value = (isFinite(res) && qVal !== 0) ? res.toFixed(4) : '';
+                price.className = 'auto';
+            } else if (solveFor === 'qty') {
+                const res = tVal / pVal;
+                qty.value = (isFinite(res) && pVal !== 0) ? res.toFixed(6) : '';
+                qty.className = 'auto';
             }
         }
 
-        // --- Core Logic ---
+        function clearForm() {
+            ['in-qty', 'in-price', 'in-total', 'in-order'].forEach(id => {
+                const el = document.getElementById(id);
+                el.value = '';
+                el.className = '';
+            });
+            lastEdited = [];
+        }
+
         function addEntry() {
-            const name = document.getElementById('in-asset').value.toUpperCase() || 'UNKNOWN';
+            const name = document.getElementById('in-asset').value.toUpperCase().trim() || 'ASSET';
             const qty = parseFloat(document.getElementById('in-qty').value);
             const price = parseFloat(document.getElementById('in-price').value);
             const total = parseFloat(document.getElementById('in-total').value);
-            const order = document.getElementById('in-order').value || `Order #${(assets[name]?.entries.length || 0) + 1}`;
+            const order = document.getElementById('in-order').value || '-';
 
-            if (isNaN(qty) || isNaN(price) || qty <= 0) return;
+            if (isNaN(qty) || isNaN(total) || qty <= 0) {
+                alert("Ongeldige invoer. Zorg voor een geldig aantal en totaalbedrag.");
+                return;
+            }
 
-            if (!assets[name]) assets[name] = { currentPrice: price, entries: [] };
+            if (!assets[name]) assets[name] = { currentPrice: price || 0, entries: [] };
             
-            assets[name].entries.push({ qty, price, total: qty * price, order, timestamp: Date.now() });
-            
-            // Sort by timestamp (FIFO principle)
-            assets[name].entries.sort((a, b) => a.timestamp - b.timestamp);
+            assets[name].entries.push({ qty, price: total/qty, total, order, time: Date.now() });
+            assets[name].entries.sort((a, b) => a.time - b.time);
             
             updateUI();
-            clearInputs();
-        }
-
-        function clearInputs() {
-            fields.forEach(f => {
-                const el = document.getElementById(f);
-                el.value = '';
-                el.classList.remove('auto-filled');
-            });
-            document.getElementById('in-order').value = '';
+            clearForm();
         }
 
         function removeEntry(name, index) {
@@ -210,7 +232,11 @@
 
         function updateCurrentPrice(name, val) {
             assets[name].currentPrice = parseFloat(val) || 0;
-            updateUI(false); // Update stats but don't re-render everything if possible
+            updateUI(false); 
+        }
+
+        function formatEuro(val) {
+            return new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR' }).format(val);
         }
 
         function updateUI(reRenderList = true) {
@@ -220,20 +246,20 @@
             let globalNp1 = 0;
             let globalNp2 = 0;
 
-            Object.keys(assets).forEach(name => {
+            Object.keys(assets).sort().forEach(name => {
                 const asset = assets[name];
                 let assetQty = 0;
                 let assetCost = 0;
 
-                const tableRows = asset.entries.map((e, i) => {
+                const rows = asset.entries.map((e, i) => {
                     assetQty += e.qty;
                     assetCost += e.total;
                     return `<tr>
-                        <td>${e.order} <span class="info-badge">FIFO #${i+1}</span></td>
-                        <td>${e.qty.toLocaleString('nl-BE')}</td>
-                        <td>€ ${e.price.toLocaleString('nl-BE', {minimumFractionDigits: 2})}</td>
-                        <td>€ ${e.total.toLocaleString('nl-BE', {minimumFractionDigits: 2})}</td>
-                        <td style="text-align:right"><button class="btn-remove" onclick="removeEntry('${name}', ${i})">X</button></td>
+                        <td>${e.order} <span class="fifo-badge">FIFO #${i+1}</span></td>
+                        <td>${Number(e.qty.toFixed(8))}</td>
+                        <td>${formatEuro(e.price)}</td>
+                        <td>${formatEuro(e.total)}</td>
+                        <td style="text-align:right"><button class="btn-remove" onclick="removeEntry('${name}', ${i})">Wis</button></td>
                     </tr>`;
                 }).join('');
 
@@ -245,24 +271,28 @@
                         <div class="asset-group">
                             <div class="asset-header">
                                 <span class="asset-title">${name}</span>
-                                <div class="input-field">
-                                    <label>Huidige Prijs (€)</label>
-                                    <input type="number" class="current-price-input" value="${asset.currentPrice}" oninput="updateCurrentPrice('${name}', this.value)">
+                                <div class="input-field" style="flex-direction:row; align-items:center; gap:10px;">
+                                    <label>Huidige Prijs:</label>
+                                    <input type="number" step="any" value="${asset.currentPrice}" 
+                                           style="width:120px; font-weight:700;"
+                                           oninput="updateCurrentPrice('${name}', this.value)">
                                 </div>
                             </div>
-                            <table>
-                                <thead><tr><th>Order (Volgorde)</th><th>Aantal</th><th>Prijs</th><th>Totaal</th><th></th></tr></thead>
-                                <tbody>${tableRows}</tbody>
-                                <tfoot>
-                                    <tr style="font-weight:700; background: #f8fafc;">
-                                        <td>TOTAAL ${name}</td>
-                                        <td>${assetQty.toLocaleString('nl-BE')}</td>
-                                        <td>-</td>
-                                        <td>€ ${assetCost.toLocaleString('nl-BE', {minimumFractionDigits: 2})}</td>
-                                        <td></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                            <div class="table-container">
+                                <table>
+                                    <thead><tr><th>Order Info</th><th>Aantal</th><th>Eenheidsprijs</th><th>Totaal</th><th></th></tr></thead>
+                                    <tbody>${rows}</tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td>TOTAAL ${name}</td>
+                                            <td>${Number(assetQty.toFixed(8))}</td>
+                                            <td>Gem: ${formatEuro(assetCost/assetQty)}</td>
+                                            <td>${formatEuro(assetCost)}</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
                         </div>
                     `;
                 }
@@ -271,46 +301,35 @@
             const gain = globalNp2 - globalNp1;
             const tax = Math.max(gain - 10000, 0);
 
-            document.getElementById('stat-np1').innerText = `€ ${globalNp1.toLocaleString('nl-BE', {minimumFractionDigits: 2})}`;
-            document.getElementById('stat-np2').innerText = `€ ${globalNp2.toLocaleString('nl-BE', {minimumFractionDigits: 2})}`;
-            document.getElementById('stat-gain').innerText = `€ ${gain.toLocaleString('nl-BE', {minimumFractionDigits: 2})}`;
-            document.getElementById('stat-tax').innerText = `€ ${tax.toLocaleString('nl-BE', {minimumFractionDigits: 2})}`;
+            document.getElementById('stat-np1').innerText = formatEuro(globalNp1);
+            document.getElementById('stat-np2').innerText = formatEuro(globalNp2);
+            document.getElementById('stat-gain').innerText = formatEuro(gain);
+            document.getElementById('stat-tax').innerText = formatEuro(tax);
 
             updateCharts(globalNp1);
         }
 
         function updateCharts(np1) {
-            const labels = [];
-            const valueData = [];
-            const taxData = [];
-
-            for (let growth = -20; growth <= 300; growth += 10) {
-                const np2 = np1 * (1 + growth / 100);
-                const gain = np2 - np1;
-                const tax = Math.max(gain - 10000, 0);
-                labels.push(`${growth}%`);
-                valueData.push(np2);
-                taxData.push(tax);
+            const labels = [], vData = [], tData = [];
+            for (let g = -20; g <= 300; g += 10) {
+                const np2 = np1 * (1 + g/100);
+                labels.push(`${g}%`);
+                vData.push(np2);
+                tData.push(Math.max(np2 - np1 - 10000, 0));
             }
 
             if (charts.value) charts.value.destroy();
-            charts.value = new Chart(document.getElementById('valueChart').getContext('2d'), {
+            charts.value = new Chart(document.getElementById('valueChart'), {
                 type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Waarde (€)', data: valueData, borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.05)', fill: true, tension: 0.3 }]
-                },
+                data: { labels, datasets: [{ label: 'Waarde (€)', data: vData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', fill: true, tension: 0.3 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
             if (charts.tax) charts.tax.destroy();
-            charts.tax = new Chart(document.getElementById('taxChart').getContext('2d'), {
+            charts.tax = new Chart(document.getElementById('taxChart'), {
                 type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Belasting (€)', data: taxData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
+                data: { labels, datasets: [{ label: 'Belasting (€)', data: tData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
     </script>
