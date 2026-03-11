@@ -203,19 +203,10 @@
             const price = parseFloat(document.getElementById('out-price').value);
             if (!asset || isNaN(qty) || isNaN(price) || qty <= 0) return;
 
-            // Check if we have enough quantity
+            // Check if we have enough quantity available
             let availableQty = 0;
-            entries.forEach(e => {
-                if (e.asset === asset) {
-                    // We need to calculate how much is available AFTER existing sales
-                    availableQty += e.originalQty;
-                }
-            });
-            sales.forEach(s => {
-                if (s.asset === asset) {
-                    availableQty -= s.qty;
-                }
-            });
+            entries.forEach(e => { if (e.asset === asset) availableQty += e.originalQty; });
+            sales.forEach(s => { if (s.asset === asset) availableQty -= s.qty; });
 
             if (qty > availableQty) {
                 alert(`Niet genoeg ${asset} in portefeuille! Beschikbaar: ${availableQty.toFixed(4)}`);
@@ -265,7 +256,7 @@
             // 1. Reset current quantities for FIFO
             entries.forEach(e => e.qty = e.originalQty);
 
-            // 2. FIFO Calculation
+            // 2. FIFO Calculation (for tables)
             let totalRealizedGain = 0;
             const processedSales = sales.map(s => {
                 let remainingToSell = s.qty;
@@ -283,9 +274,15 @@
                 return { ...s, gain };
             });
 
-            // 3. Current Holding Stats
-            let currentCostBasis = 0;
+            // 3. Stats for Black Box (TOTAL purchased amount as requested)
+            const totalNp1 = entries.reduce((sum, e) => sum + e.total, 0);
             const growth = 1 + (parseFloat(document.getElementById('growth-slider').value) / 100);
+            const totalNp2 = totalNp1 * growth;
+            const tax = Math.max(totalNp2 - totalNp1 - 10000, 0);
+
+            document.getElementById('stat-np1').innerText = '€' + totalNp1.toLocaleString('nl-BE', {minimumFractionDigits: 2});
+            document.getElementById('stat-np2').innerText = '€' + totalNp2.toLocaleString('nl-BE', {minimumFractionDigits: 2});
+            document.getElementById('stat-tax').innerText = '€' + tax.toLocaleString('nl-BE', {minimumFractionDigits: 2});
 
             if (reRenderTable) {
                 const list = document.getElementById('asset-list');
@@ -312,7 +309,6 @@
                             <td><button class="btn-action btn-del" onclick="deleteEntry(${e.globalIdx})">×</button></td>
                         </tr>`;
                     }).join('');
-                    
                     if (aQty > 0 || groups[name].some(e => e.originalQty > 0)) {
                         list.innerHTML += `<div class="asset-group"><h3>${name}</h3><table><thead><tr><th>Asset & Volgorde</th><th>Aantal Resterend</th><th>Aankoop Prijs</th><th>Totaal</th><th></th></tr></thead><tbody>${rows}</tbody><tr class="asset-summary"><td>Totaal ${name}</td><td>${aQty.toFixed(4)}</td><td>Gem: €${aQty > 0 ? (aCost/aQty).toFixed(2) : '0.00'}</td><td>€${aCost.toFixed(2)}</td><td></td></tr></table></div>`;
                     }
@@ -335,32 +331,17 @@
                     sList.innerHTML = '';
                 }
             }
-            
-            // Recalculate cost basis from remaining units
-            currentCostBasis = entries.reduce((sum, e) => sum + (e.qty * e.price), 0);
 
-            const totalNp2 = currentCostBasis * growth;
-            const unrealizedGain = totalNp2 - currentCostBasis;
-            const totalGain = totalRealizedGain + unrealizedGain;
-            const tax = Math.max(totalGain - 10000, 0) * 0.33;
-
-            document.getElementById('stat-np1').innerText = '€' + currentCostBasis.toLocaleString('nl-BE', {minimumFractionDigits: 2});
-            document.getElementById('stat-np2').innerText = '€' + totalNp2.toLocaleString('nl-BE', {minimumFractionDigits: 2});
-            document.getElementById('stat-tax').innerText = '€' + tax.toLocaleString('nl-BE', {minimumFractionDigits: 2});
-
-            updateCharts(currentCostBasis, totalRealizedGain);
+            updateCharts(totalNp1);
         }
 
-        function updateCharts(np1, realized) {
+        function updateCharts(np1) {
             const labels = [], vData = [], tData = [];
             for (let g = -20; g <= 100; g += 5) {
-                const growthVal = (1 + g/100);
-                const currentVal = np1 * growthVal;
-                const totalGain = (currentVal - np1) + realized;
-                
+                const np2 = np1 * (1 + g/100);
                 labels.push(`${g}%`);
-                vData.push(currentVal);
-                tData.push(Math.max(totalGain - 10000, 0) * 0.33);
+                vData.push(np2);
+                tData.push(Math.max(np2 - np1 - 10000, 0));
             }
 
             if (charts.tax) charts.tax.destroy();
@@ -368,35 +349,18 @@
                 type: 'line',
                 data: { labels, datasets: [{ label: 'Belasting (€)', data: tData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 }] },
                 options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            grid: {
-                                color: (context) => context.tick && context.tick.label === '0%' ? 'rgba(15, 23, 42, 0.5)' : 'rgba(0,0,0,0.1)',
-                                lineWidth: (context) => context.tick && context.tick.label === '0%' ? 2 : 1
-                            }
-                        }
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { x: { grid: { color: (c) => c.tick && c.tick.label === '0%' ? 'rgba(15, 23, 42, 0.5)' : 'rgba(0,0,0,0.1)', lineWidth: (c) => c.tick && c.tick.label === '0%' ? 2 : 1 } } }
                 }
             });
 
             if (charts.value) charts.value.destroy();
             charts.value = new Chart(document.getElementById('valueChart'), {
                 type: 'line',
-                data: { labels, datasets: [{ label: 'Portefeuille Waarde (€)', data: vData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', fill: true, tension: 0.3 }] },
+                data: { labels, datasets: [{ label: 'Waarde (€)', data: vData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', fill: true, tension: 0.3 }] },
                 options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: (context) => context.tick && context.tick.label === '0%' ? 'rgba(15, 23, 42, 0.5)' : 'rgba(0,0,0,0.1)',
-                                lineWidth: (context) => context.tick && context.tick.label === '0%' ? 2 : 1
-                            }
-                        }
-                    }
+                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: { x: { grid: { color: (c) => c.tick && c.tick.label === '0%' ? 'rgba(15, 23, 42, 0.5)' : 'rgba(0,0,0,0.1)', lineWidth: (c) => c.tick && c.tick.label === '0%' ? 2 : 1 } } }
                 }
             });
         }
