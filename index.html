@@ -41,8 +41,10 @@
         .btn-sell { background-color: var(--danger); color: white; }
         .btn-sell:hover { background-color: #dc2626; }
         .btn-clear { background-color: #94a3b8; color: white; font-size: 0.8rem; }
-        .btn-export { background-color: #0f172a; color: white; margin-left: auto; }
+        .btn-export { background-color: #0f172a; color: white; margin-left: 8px; }
         .btn-export:hover { background-color: #334155; }
+        .btn-reset { background-color: #ef4444; color: white; }
+        .btn-reset:hover { background-color: #b91c1c; }
 
         .sim-section { background: #1e293b; color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
         .sim-control { flex: 1; min-width: 250px; }
@@ -72,13 +74,14 @@
         
         .settings-toggle { margin-bottom: 1rem; font-size: 0.8rem; color: var(--primary); text-decoration: underline; cursor: pointer; }
         .settings-panel { display: none; background: #f1f5f9; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid #cbd5e1; }
-        .header-actions { display: flex; justify-content: flex-end; margin-bottom: 1rem; }
+        .header-actions { display: flex; justify-content: flex-end; margin-bottom: 1rem; gap: 8px; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <div class="header-actions">
+             <button class="btn-reset" onclick="resetPortfolio()">⚠ Reset Portefeuille</button>
              <button class="btn-export" onclick="exportCSV()">⬇ Exporteer CSV</button>
         </div>
 
@@ -221,6 +224,15 @@
             localStorage.setItem('sales', JSON.stringify(sales));
             localStorage.setItem('tax-threshold', document.getElementById('tax-threshold').value);
             localStorage.setItem('tax-rate', document.getElementById('tax-rate').value);
+        }
+
+        function resetPortfolio() {
+            if (confirm("Weet je zeker dat je de hele portefeuille wilt wissen? Dit kan niet ongedaan worden gemaakt.")) {
+                entries = [];
+                sales = [];
+                saveData();
+                updateUI();
+            }
         }
 
         function exportCSV() {
