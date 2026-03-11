@@ -77,11 +77,15 @@
         <h2>Aankoop (Buy)</h2>
         <div class="form-grid">
             <div class="input-field">
+                <label>Datum</label>
+                <input type="date" id="in-date">
+            </div>
+            <div class="input-field">
                 <label>Asset Naam</label>
                 <input type="text" id="in-asset" placeholder="bijv. BTC">
             </div>
             <div class="input-field">
-                <label>Aantal <span class="hint">(geheel aanbevolen)</span></label>
+                <label>Aantal</label>
                 <input type="number" id="in-qty" placeholder="0" oninput="triangulate('qty')">
             </div>
             <div class="input-field">
@@ -100,6 +104,10 @@
 
         <h2>Verkoop (Sell - FIFO)</h2>
         <div class="form-grid" style="background: #fff1f2; border: 1px solid #fecaca;">
+            <div class="input-field">
+                <label>Datum</label>
+                <input type="date" id="out-date">
+            </div>
             <div class="input-field">
                 <label>Asset Naam</label>
                 <input type="text" id="out-asset" placeholder="bijv. BTC">
@@ -158,10 +166,18 @@
     </div>
 
     <script>
-        let entries = []; // { asset, qty, originalQty, total, price, id }
-        let sales = [];   // { asset, qty, price, id }
+        let entries = []; // { asset, qty, originalQty, total, price, id, date }
+        let sales = [];   // { asset, qty, price, id, date }
         let charts = { tax: null, value: null };
         let lastEdited = [];
+
+        // Set default dates to today
+        window.addEventListener('load', () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('in-date').value = today;
+            document.getElementById('out-date').value = today;
+            updateUI();
+        });
 
         function triangulate(id) {
             const qty = document.getElementById('in-qty'), price = document.getElementById('in-price'), total = document.getElementById('in-total');
@@ -181,12 +197,14 @@
         }
 
         function addEntry() {
+            const date = document.getElementById('in-date').value;
             const asset = document.getElementById('in-asset').value.toUpperCase() || 'ASSET';
             const qty = parseFloat(document.getElementById('in-qty').value);
             const total = parseFloat(document.getElementById('in-total').value);
-            if (isNaN(qty) || isNaN(total) || qty <= 0) return;
+            if (!date || isNaN(qty) || isNaN(total) || qty <= 0) return;
 
             entries.push({ 
+                date,
                 asset, 
                 qty: qty, 
                 originalQty: qty, 
@@ -199,10 +217,11 @@
         }
 
         function addSale() {
+            const date = document.getElementById('out-date').value;
             const asset = document.getElementById('out-asset').value.toUpperCase();
             const qty = parseFloat(document.getElementById('out-qty').value);
             const price = parseFloat(document.getElementById('out-price').value);
-            if (!asset || isNaN(qty) || isNaN(price) || qty <= 0) return;
+            if (!date || !asset || isNaN(qty) || isNaN(price) || qty <= 0) return;
 
             // Check if we have enough quantity available
             let availableQty = 0;
@@ -214,7 +233,7 @@
                 return;
             }
 
-            sales.push({ asset, qty, price, id: Date.now() });
+            sales.push({ date, asset, qty, price, id: Date.now() });
             updateUI();
             document.getElementById('out-qty').value = '';
             document.getElementById('out-price').value = '';
@@ -304,7 +323,7 @@
                                 <span style="display: inline-block; width: 20px; font-weight: 800; color: var(--primary);">${i + 1}.</span>
                                 <button class="btn-action" onclick="moveEntry(${e.globalIdx}, -1)">↑</button>
                                 <button class="btn-action" onclick="moveEntry(${e.globalIdx}, 1)">↓</button>
-                                ${name}
+                                ${name} <small style="color: var(--secondary)">(${e.date})</small>
                             </td>
                             <td>${e.qty.toFixed(4)} <small>(van ${e.originalQty})</small></td>
                             <td>€${e.price.toFixed(2)}</td>
@@ -322,7 +341,7 @@
                     sList.innerHTML = '<h2>Gerealiseerde Transacties</h2>';
                     const sRows = processedSales.map((s, idx) => `
                         <tr>
-                            <td>${s.asset}</td>
+                            <td>${s.asset} <small style="color: var(--secondary)">(${s.date})</small></td>
                             <td>${s.qty}</td>
                             <td>€${s.price.toFixed(2)}</td>
                             <td style="color: ${s.gain >= 0 ? 'var(--success)' : 'var(--danger)'}">€${s.gain.toFixed(2)}</td>
