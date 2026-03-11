@@ -67,12 +67,30 @@
         .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; }
         .chart-box { height: 320px; }
         .hint { font-size: 0.65rem; font-weight: 400; color: #f59e0b; }
+        
+        .settings-toggle { margin-bottom: 1rem; font-size: 0.8rem; color: var(--primary); text-decoration: underline; cursor: pointer; }
+        .settings-panel { display: none; background: #f1f5f9; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid #cbd5e1; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h1>Meerwaardebelasting Calculator</h1>
+
+        <div class="settings-toggle" onclick="toggleSettings()">⚙ Instellingen tonen/verbergen</div>
+        <div class="settings-panel" id="settings-panel">
+            <h2>Belasting Parameters</h2>
+            <div class="form-grid">
+                <div class="input-field">
+                    <label>Vrijstelling (€)</label>
+                    <input type="number" id="tax-threshold" value="10000" oninput="updateUI()">
+                </div>
+                <div class="input-field">
+                    <label>Belastingtarief (%)</label>
+                    <input type="number" id="tax-rate" value="10" oninput="updateUI()">
+                </div>
+            </div>
+        </div>
         
         <h2>Aankoop (Buy)</h2>
         <div class="form-grid">
@@ -140,7 +158,7 @@
                 <span class="stat-value" id="stat-np2">€ 0,00</span>
             </div>
             <div class="stat-card">
-                <span class="stat-label">Belasting (10%)</span>
+                <span class="stat-label">Belasting (Geschat)</span>
                 <span class="stat-value" id="stat-tax" style="color: var(--danger);">€ 0,00</span>
             </div>
         </div>
@@ -162,6 +180,17 @@
         let sales = [];   // { asset, qty, price, id }
         let charts = { tax: null, value: null };
         let lastEdited = [];
+
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function getTaxParams() {
+            const threshold = parseFloat(document.getElementById('tax-threshold').value) || 0;
+            const rate = (parseFloat(document.getElementById('tax-rate').value) || 0) / 100;
+            return { threshold, rate };
+        }
 
         function triangulate(id) {
             const qty = document.getElementById('in-qty'), price = document.getElementById('in-price'), total = document.getElementById('in-total');
@@ -254,6 +283,8 @@
         }
 
         function updateUI(reRenderTable = true) {
+            const { threshold, rate } = getTaxParams();
+
             // 1. Reset current quantities for FIFO
             entries.forEach(e => e.qty = e.originalQty);
 
@@ -275,12 +306,12 @@
                 return { ...s, gain };
             });
 
-            // 3. Stats for Black Box (TOTAL purchased amount as requested)
+            // 3. Stats for Black Box
             const totalNp1 = entries.reduce((sum, e) => sum + e.total, 0);
             const growth = 1 + (parseFloat(document.getElementById('growth-slider').value) / 100);
             const totalNp2 = totalNp1 * growth;
             const simulatedGain = totalNp2 - totalNp1;
-            const simulatedTax = Math.max(simulatedGain - 10000, 0) * 0.10;
+            const simulatedTax = Math.max(simulatedGain - threshold, 0) * rate;
 
             document.getElementById('stat-np1').innerText = '€' + totalNp1.toLocaleString('nl-BE', {minimumFractionDigits: 2});
             document.getElementById('stat-np2').innerText = '€' + totalNp2.toLocaleString('nl-BE', {minimumFractionDigits: 2});
@@ -330,8 +361,7 @@
                         </tr>
                     `).join('');
                     
-                    // FIFO Realized Tax Calculation (10% over threshold of 10000)
-                    const realizedTax = Math.max(totalRealizedGain - 10000, 0) * 0.10;
+                    const realizedTax = Math.max(totalRealizedGain - threshold, 0) * rate;
                     
                     sList.innerHTML += `<table>
                         <thead><tr><th>Asset</th><th>Aantal</th><th>Verkoopprijs</th><th>Winst/Verlies</th><th></th></tr></thead>
@@ -342,7 +372,7 @@
                                 <td colspan="2" style="color: ${totalRealizedGain >= 0 ? 'var(--success)' : 'var(--danger)'}">€${totalRealizedGain.toFixed(2)}</td>
                             </tr>
                             <tr class="sale-total" style="background: #fee2e2;">
-                                <td colspan="3">FIFO Gerealiseerde Meerwaardebelasting (10% boven €10k)</td>
+                                <td colspan="3">FIFO Gerealiseerde Meerwaardebelasting (${(rate * 100).toFixed(0)}% boven €${(threshold/1000).toFixed(0)}k)</td>
                                 <td colspan="2" style="color: var(--danger)">€${realizedTax.toFixed(2)}</td>
                             </tr>
                         </tfoot>
@@ -356,12 +386,13 @@
         }
 
         function updateCharts(np1) {
+            const { threshold, rate } = getTaxParams();
             const labels = [], vData = [], tData = [];
             for (let g = -20; g <= 100; g += 5) {
                 const np2 = np1 * (1 + g/100);
                 labels.push(`${g}%`);
                 vData.push(np2);
-                tData.push(Math.max(np2 - np1 - 10000, 0) * 0.10);
+                tData.push(Math.max(np2 - np1 - threshold, 0) * rate);
             }
 
             if (charts.tax) charts.tax.destroy();
