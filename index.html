@@ -131,15 +131,15 @@
         </div>
         <div class="summary-grid" style="flex: 2;">
             <div class="stat-card">
-                <span class="stat-label">Huidige Investering (np₁)</span>
+                <span class="stat-label">Investering (np₁)</span>
                 <span class="stat-value" id="stat-np1">€ 0,00</span>
             </div>
             <div class="stat-card">
-                <span class="stat-label">Gerealiseerde Winst</span>
-                <span class="stat-value" id="stat-realized" style="color: var(--success);">€ 0,00</span>
+                <span class="stat-label">Nieuwe Waarde (np₂)</span>
+                <span class="stat-value" id="stat-np2">€ 0,00</span>
             </div>
             <div class="stat-card">
-                <span class="stat-label">Totale Belasting</span>
+                <span class="stat-label">Belasting</span>
                 <span class="stat-value" id="stat-tax" style="color: var(--danger);">€ 0,00</span>
             </div>
         </div>
@@ -202,6 +202,25 @@
             const qty = parseFloat(document.getElementById('out-qty').value);
             const price = parseFloat(document.getElementById('out-price').value);
             if (!asset || isNaN(qty) || isNaN(price) || qty <= 0) return;
+
+            // Check if we have enough quantity
+            let availableQty = 0;
+            entries.forEach(e => {
+                if (e.asset === asset) {
+                    // We need to calculate how much is available AFTER existing sales
+                    availableQty += e.originalQty;
+                }
+            });
+            sales.forEach(s => {
+                if (s.asset === asset) {
+                    availableQty -= s.qty;
+                }
+            });
+
+            if (qty > availableQty) {
+                alert(`Niet genoeg ${asset} in portefeuille! Beschikbaar: ${availableQty.toFixed(4)}`);
+                return;
+            }
 
             sales.push({ asset, qty, price, id: Date.now() });
             updateUI();
@@ -293,7 +312,7 @@
                             <td><button class="btn-action btn-del" onclick="deleteEntry(${e.globalIdx})">×</button></td>
                         </tr>`;
                     }).join('');
-                    currentCostBasis += aCost;
+                    
                     if (aQty > 0 || groups[name].some(e => e.originalQty > 0)) {
                         list.innerHTML += `<div class="asset-group"><h3>${name}</h3><table><thead><tr><th>Asset & Volgorde</th><th>Aantal Resterend</th><th>Aankoop Prijs</th><th>Totaal</th><th></th></tr></thead><tbody>${rows}</tbody><tr class="asset-summary"><td>Totaal ${name}</td><td>${aQty.toFixed(4)}</td><td>Gem: €${aQty > 0 ? (aCost/aQty).toFixed(2) : '0.00'}</td><td>€${aCost.toFixed(2)}</td><td></td></tr></table></div>`;
                     }
@@ -315,17 +334,18 @@
                 } else {
                     sList.innerHTML = '';
                 }
-            } else {
-                currentCostBasis = entries.reduce((sum, e) => sum + (e.qty * e.price), 0);
             }
+            
+            // Recalculate cost basis from remaining units
+            currentCostBasis = entries.reduce((sum, e) => sum + (e.qty * e.price), 0);
 
             const totalNp2 = currentCostBasis * growth;
             const unrealizedGain = totalNp2 - currentCostBasis;
             const totalGain = totalRealizedGain + unrealizedGain;
-            const tax = Math.max(totalGain - 10000, 0) * 0.33; // Original logic with 33% tax on gain above 10k
+            const tax = Math.max(totalGain - 10000, 0) * 0.33;
 
             document.getElementById('stat-np1').innerText = '€' + currentCostBasis.toLocaleString('nl-BE', {minimumFractionDigits: 2});
-            document.getElementById('stat-realized').innerText = '€' + totalRealizedGain.toLocaleString('nl-BE', {minimumFractionDigits: 2});
+            document.getElementById('stat-np2').innerText = '€' + totalNp2.toLocaleString('nl-BE', {minimumFractionDigits: 2});
             document.getElementById('stat-tax').innerText = '€' + tax.toLocaleString('nl-BE', {minimumFractionDigits: 2});
 
             updateCharts(currentCostBasis, totalRealizedGain);
