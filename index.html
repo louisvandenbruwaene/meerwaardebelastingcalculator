@@ -115,15 +115,15 @@
             </div>
             <div class="input-field">
                 <label>Aantal</label>
-                <input type="number" id="in-qty" placeholder="0" oninput="triangulate('qty')">
+                <input type="number" id="in-qty" placeholder="0" oninput="triangulate('qty')" min="0" step="any">
             </div>
             <div class="input-field">
                 <label>Eenheidsprijs (€)</label>
-                <input type="number" id="in-price" placeholder="0.00" oninput="triangulate('price')">
+                <input type="number" id="in-price" placeholder="0.00" oninput="triangulate('price')" min="0" step="any">
             </div>
             <div class="input-field">
                 <label>Totale Aankoop (€)</label>
-                <input type="number" id="in-total" placeholder="0.00" oninput="triangulate('total')">
+                <input type="number" id="in-total" placeholder="0.00" oninput="triangulate('total')" min="0" step="any">
             </div>
             <div style="display: flex; gap: 8px;">
                 <button class="btn-add" onclick="addEntry()">Voeg toe</button>
@@ -143,11 +143,11 @@
             </div>
             <div class="input-field">
                 <label>Aantal te verkopen</label>
-                <input type="number" id="out-qty" placeholder="0">
+                <input type="number" id="out-qty" placeholder="0" min="0" step="any">
             </div>
             <div class="input-field">
                 <label>Verkoopprijs (€ per stuk)</label>
-                <input type="number" id="out-price" placeholder="0.00">
+                <input type="number" id="out-price" placeholder="0.00" min="0" step="any">
             </div>
             <div style="display: flex; gap: 8px;">
                 <button class="btn-sell" onclick="addSale()">Verkoop</button>
@@ -284,9 +284,14 @@
             if (lastEdited.length < 2) return;
 
             const solveFor = ['qty', 'price', 'total'].find(f => !lastEdited.includes(f));
-            if (solveFor === 'total') total.value = (q * p).toFixed(2);
-            else if (solveFor === 'price') price.value = (t / q).toFixed(4);
-            else if (solveFor === 'qty') qty.value = (t / p).toFixed(6);
+            
+            if (solveFor === 'total' && !isNaN(q) && !isNaN(p)) {
+                total.value = (q * p).toFixed(2);
+            } else if (solveFor === 'price' && !isNaN(t) && !isNaN(q) && q !== 0) {
+                price.value = (t / q).toFixed(4);
+            } else if (solveFor === 'qty' && !isNaN(t) && !isNaN(p) && p !== 0) {
+                qty.value = (t / p).toFixed(6);
+            }
             
             [qty, price, total].forEach(el => el.classList.toggle('auto', el.value !== '' && !lastEdited.includes(el.id.replace('in-', ''))));
         }
@@ -296,15 +301,31 @@
             const asset = document.getElementById('in-asset').value.toUpperCase() || 'ASSET';
             const qty = parseFloat(document.getElementById('in-qty').value);
             const total = parseFloat(document.getElementById('in-total').value);
-            if (!date || isNaN(qty) || isNaN(total) || qty <= 0) return;
+            
+            if (!date) {
+                alert("Selecteer een datum.");
+                return;
+            }
+            if (!asset || asset.trim() === '') {
+                alert("Vul een naam in voor de asset.");
+                return;
+            }
+            if (isNaN(qty) || qty <= 0) {
+                alert("Aantal moet groter zijn dan 0.");
+                return;
+            }
+            if (isNaN(total) || total < 0) {
+                alert("Totaalbedrag mag niet negatief zijn.");
+                return;
+            }
 
             entries.push({ 
                 date,
-                asset, 
+                asset: asset.trim(), 
                 qty: qty, 
                 originalQty: qty, 
                 total, 
-                price: total/qty,
+                price: qty > 0 ? total/qty : 0,
                 id: Date.now()
             });
             saveData();
@@ -317,7 +338,23 @@
             const asset = document.getElementById('out-asset').value.toUpperCase();
             const qty = parseFloat(document.getElementById('out-qty').value);
             const price = parseFloat(document.getElementById('out-price').value);
-            if (!date || !asset || isNaN(qty) || isNaN(price) || qty <= 0) return;
+            
+            if (!date) {
+                alert("Selecteer een datum.");
+                return;
+            }
+            if (!asset || asset.trim() === '') {
+                alert("Vul een naam in voor de asset.");
+                return;
+            }
+            if (isNaN(qty) || qty <= 0) {
+                alert("Te verkopen aantal moet groter zijn dan 0.");
+                return;
+            }
+            if (isNaN(price) || price < 0) {
+                alert("Verkoopprijs mag niet negatief zijn.");
+                return;
+            }
 
             // Check if we have enough quantity available
             let availableQty = 0;
@@ -329,7 +366,7 @@
                 return;
             }
 
-            sales.push({ date, asset, qty, price, id: Date.now() });
+            sales.push({ date, asset: asset.trim(), qty, price, id: Date.now() });
             saveData();
             updateUI();
             document.getElementById('out-qty').value = '';
