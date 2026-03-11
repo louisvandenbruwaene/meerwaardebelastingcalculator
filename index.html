@@ -27,17 +27,19 @@
         
         .form-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;
-            background: var(--accent); padding: 1.25rem; border-radius: 8px; align-items: flex-end; margin-bottom: 2rem;
+            background: var(--accent); padding: 1.25rem; border-radius: 8px; align-items: flex-end; margin-bottom: 1rem;
         }
         .input-field { display: flex; flex-direction: column; gap: 0.3rem; }
         label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--secondary); }
-        input { padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; background: white; }
+        input { padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; background: white; width: 100%; box-sizing: border-box; }
         input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         input.auto { color: #2563eb; font-weight: 600; background: #eff6ff; }
         
         button { padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
         .btn-add { background-color: var(--primary); color: white; }
         .btn-add:hover { background-color: #1d4ed8; }
+        .btn-sell { background-color: var(--danger); color: white; }
+        .btn-sell:hover { background-color: #dc2626; }
         .btn-clear { background-color: #94a3b8; color: white; font-size: 0.8rem; }
 
         .sim-section { background: #1e293b; color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
@@ -55,6 +57,11 @@
         th { text-align: left; padding: 0.75rem; color: var(--secondary); border-bottom: 2px solid var(--border); font-size: 0.75rem; text-transform: uppercase; }
         td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
         tr.asset-summary { background: #f8fafc; font-weight: 700; }
+        
+        .btn-action { background: none; border: 1px solid var(--border); padding: 2px 6px; font-size: 0.7rem; color: var(--secondary); margin-right: 2px; border-radius: 4px; }
+        .btn-action:hover { background: var(--accent); color: var(--primary); }
+        .btn-del { color: var(--danger); border-color: #fca5a5; }
+        .btn-del:hover { background: #fee2e2; color: #b91c1c; }
 
         .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; }
         .chart-box { height: 320px; }
@@ -66,6 +73,7 @@
     <div class="card">
         <h1>Meerwaardebelasting Calculator</h1>
         
+        <h2>Aankoop (Buy)</h2>
         <div class="form-grid">
             <div class="input-field">
                 <label>Asset Naam</label>
@@ -89,7 +97,27 @@
             </div>
         </div>
 
+        <h2>Verkoop (Sell - FIFO)</h2>
+        <div class="form-grid" style="background: #fff1f2; border: 1px solid #fecaca;">
+            <div class="input-field">
+                <label>Asset Naam</label>
+                <input type="text" id="out-asset" placeholder="bijv. BTC">
+            </div>
+            <div class="input-field">
+                <label>Aantal te verkopen</label>
+                <input type="number" id="out-qty" placeholder="0">
+            </div>
+            <div class="input-field">
+                <label>Verkoopprijs (€ per stuk)</label>
+                <input type="number" id="out-price" placeholder="0.00">
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-sell" onclick="addSale()">Verkoop</button>
+            </div>
+        </div>
+
         <div id="asset-list"></div>
+        <div id="sales-list"></div>
     </div>
 
     <!-- Simulation Controls -->
@@ -103,15 +131,15 @@
         </div>
         <div class="summary-grid" style="flex: 2;">
             <div class="stat-card">
-                <span class="stat-label">Investering (np₁)</span>
+                <span class="stat-label">Huidige Investering (np₁)</span>
                 <span class="stat-value" id="stat-np1">€ 0,00</span>
             </div>
             <div class="stat-card">
-                <span class="stat-label">Nieuwe Waarde (np₂)</span>
-                <span class="stat-value" id="stat-np2">€ 0,00</span>
+                <span class="stat-label">Gerealiseerde Winst</span>
+                <span class="stat-value" id="stat-realized" style="color: var(--success);">€ 0,00</span>
             </div>
             <div class="stat-card">
-                <span class="stat-label">Belasting</span>
+                <span class="stat-label">Totale Belasting</span>
                 <span class="stat-value" id="stat-tax" style="color: var(--danger);">€ 0,00</span>
             </div>
         </div>
@@ -129,7 +157,8 @@
     </div>
 
     <script>
-        let entries = [];
+        let entries = []; // { asset, qty, originalQty, total, price, id }
+        let sales = [];   // { asset, qty, price, id }
         let charts = { tax: null, value: null };
         let lastEdited = [];
 
@@ -156,9 +185,48 @@
             const total = parseFloat(document.getElementById('in-total').value);
             if (isNaN(qty) || isNaN(total) || qty <= 0) return;
 
-            entries.push({ asset, qty, total, price: total/qty });
+            entries.push({ 
+                asset, 
+                qty: qty, 
+                originalQty: qty, 
+                total, 
+                price: total/qty,
+                id: Date.now()
+            });
             updateUI();
             resetForm();
+        }
+
+        function addSale() {
+            const asset = document.getElementById('out-asset').value.toUpperCase();
+            const qty = parseFloat(document.getElementById('out-qty').value);
+            const price = parseFloat(document.getElementById('out-price').value);
+            if (!asset || isNaN(qty) || isNaN(price) || qty <= 0) return;
+
+            sales.push({ asset, qty, price, id: Date.now() });
+            updateUI();
+            document.getElementById('out-qty').value = '';
+            document.getElementById('out-price').value = '';
+        }
+
+        function deleteEntry(index) {
+            entries.splice(index, 1);
+            updateUI();
+        }
+
+        function deleteSale(index) {
+            sales.splice(index, 1);
+            updateUI();
+        }
+
+        function moveEntry(index, dir) {
+            const newIndex = index + dir;
+            if (newIndex >= 0 && newIndex < entries.length) {
+                const temp = entries[index];
+                entries[index] = entries[newIndex];
+                entries[newIndex] = temp;
+                updateUI();
+            }
         }
 
         function resetForm() {
@@ -175,44 +243,104 @@
         }
 
         function updateUI(reRenderTable = true) {
-            let totalNp1 = 0;
+            // 1. Reset current quantities for FIFO
+            entries.forEach(e => e.qty = e.originalQty);
+
+            // 2. FIFO Calculation
+            let totalRealizedGain = 0;
+            const processedSales = sales.map(s => {
+                let remainingToSell = s.qty;
+                let costBasis = 0;
+                for (let e of entries) {
+                    if (e.asset === s.asset && e.qty > 0 && remainingToSell > 0) {
+                        let soldFromThisEntry = Math.min(e.qty, remainingToSell);
+                        costBasis += soldFromThisEntry * e.price;
+                        e.qty -= soldFromThisEntry;
+                        remainingToSell -= soldFromThisEntry;
+                    }
+                }
+                const gain = (s.qty * s.price) - costBasis;
+                totalRealizedGain += gain;
+                return { ...s, gain };
+            });
+
+            // 3. Current Holding Stats
+            let currentCostBasis = 0;
             const growth = 1 + (parseFloat(document.getElementById('growth-slider').value) / 100);
 
             if (reRenderTable) {
                 const list = document.getElementById('asset-list');
-                list.innerHTML = '';
-                const groups = entries.reduce((acc, e) => { (acc[e.asset] = acc[e.asset] || []).push(e); return acc; }, {});
+                list.innerHTML = '<h2>Huidige Portefeuille (FIFO Volgorde)</h2>';
+                const groups = entries.reduce((acc, e, idx) => { 
+                    (acc[e.asset] = acc[e.asset] || []).push({...e, globalIdx: idx}); 
+                    return acc; 
+                }, {});
                 
                 Object.keys(groups).forEach(name => {
                     let aQty = 0, aCost = 0;
                     const rows = groups[name].map(e => {
-                        aQty += e.qty; aCost += e.total;
-                        return `<tr><td>${name}</td><td>${e.qty}</td><td>€${e.price.toFixed(2)}</td><td>€${e.total.toFixed(2)}</td></tr>`;
+                        aQty += e.qty; aCost += e.qty * e.price;
+                        const isSoldOut = e.qty <= 0;
+                        return `<tr style="${isSoldOut ? 'opacity: 0.4; text-decoration: line-through;' : ''}">
+                            <td>
+                                <button class="btn-action" onclick="moveEntry(${e.globalIdx}, -1)">↑</button>
+                                <button class="btn-action" onclick="moveEntry(${e.globalIdx}, 1)">↓</button>
+                                ${name}
+                            </td>
+                            <td>${e.qty.toFixed(4)} <small>(van ${e.originalQty})</small></td>
+                            <td>€${e.price.toFixed(2)}</td>
+                            <td>€${(e.qty * e.price).toFixed(2)}</td>
+                            <td><button class="btn-action btn-del" onclick="deleteEntry(${e.globalIdx})">×</button></td>
+                        </tr>`;
                     }).join('');
-                    totalNp1 += aCost;
-                    list.innerHTML += `<div class="asset-group"><h2>${name}</h2><table><thead><tr><th>Asset</th><th>Aantal</th><th>Prijs</th><th>Totaal</th></tr></thead><tbody>${rows}</tbody><tr class="asset-summary"><td>Totaal ${name}</td><td>${aQty}</td><td>Gem: €${(aCost/aQty).toFixed(2)}</td><td>€${aCost.toFixed(2)}</td></tr></table></div>`;
+                    currentCostBasis += aCost;
+                    if (aQty > 0 || groups[name].some(e => e.originalQty > 0)) {
+                        list.innerHTML += `<div class="asset-group"><h3>${name}</h3><table><thead><tr><th>Asset & Volgorde</th><th>Aantal Resterend</th><th>Aankoop Prijs</th><th>Totaal</th><th></th></tr></thead><tbody>${rows}</tbody><tr class="asset-summary"><td>Totaal ${name}</td><td>${aQty.toFixed(4)}</td><td>Gem: €${aQty > 0 ? (aCost/aQty).toFixed(2) : '0.00'}</td><td>€${aCost.toFixed(2)}</td><td></td></tr></table></div>`;
+                    }
                 });
+
+                const sList = document.getElementById('sales-list');
+                if (sales.length > 0) {
+                    sList.innerHTML = '<h2>Gerealiseerde Transacties</h2>';
+                    const sRows = processedSales.map((s, idx) => `
+                        <tr>
+                            <td>${s.asset}</td>
+                            <td>${s.qty}</td>
+                            <td>€${s.price.toFixed(2)}</td>
+                            <td style="color: ${s.gain >= 0 ? 'var(--success)' : 'var(--danger)'}">€${s.gain.toFixed(2)}</td>
+                            <td><button class="btn-action btn-del" onclick="deleteSale(${idx})">×</button></td>
+                        </tr>
+                    `).join('');
+                    sList.innerHTML += `<table><thead><tr><th>Asset</th><th>Aantal</th><th>Verkoopprijs</th><th>Winst/Verlies</th><th></th></tr></thead><tbody>${sRows}</tbody></table>`;
+                } else {
+                    sList.innerHTML = '';
+                }
             } else {
-                totalNp1 = entries.reduce((sum, e) => sum + e.total, 0);
+                currentCostBasis = entries.reduce((sum, e) => sum + (e.qty * e.price), 0);
             }
 
-            const totalNp2 = totalNp1 * growth;
-            const tax = Math.max(totalNp2 - totalNp1 - 10000, 0);
+            const totalNp2 = currentCostBasis * growth;
+            const unrealizedGain = totalNp2 - currentCostBasis;
+            const totalGain = totalRealizedGain + unrealizedGain;
+            const tax = Math.max(totalGain - 10000, 0) * 0.33; // Original logic with 33% tax on gain above 10k
 
-            document.getElementById('stat-np1').innerText = '€' + totalNp1.toLocaleString('nl-BE', {minimumFractionDigits: 2});
-            document.getElementById('stat-np2').innerText = '€' + totalNp2.toLocaleString('nl-BE', {minimumFractionDigits: 2});
+            document.getElementById('stat-np1').innerText = '€' + currentCostBasis.toLocaleString('nl-BE', {minimumFractionDigits: 2});
+            document.getElementById('stat-realized').innerText = '€' + totalRealizedGain.toLocaleString('nl-BE', {minimumFractionDigits: 2});
             document.getElementById('stat-tax').innerText = '€' + tax.toLocaleString('nl-BE', {minimumFractionDigits: 2});
 
-            updateCharts(totalNp1);
+            updateCharts(currentCostBasis, totalRealizedGain);
         }
 
-        function updateCharts(np1) {
+        function updateCharts(np1, realized) {
             const labels = [], vData = [], tData = [];
             for (let g = -20; g <= 100; g += 5) {
-                const np2 = np1 * (1 + g/100);
+                const growthVal = (1 + g/100);
+                const currentVal = np1 * growthVal;
+                const totalGain = (currentVal - np1) + realized;
+                
                 labels.push(`${g}%`);
-                vData.push(np2);
-                tData.push(Math.max(np2 - np1 - 10000, 0));
+                vData.push(currentVal);
+                tData.push(Math.max(totalGain - 10000, 0) * 0.33);
             }
 
             if (charts.tax) charts.tax.destroy();
@@ -236,7 +364,7 @@
             if (charts.value) charts.value.destroy();
             charts.value = new Chart(document.getElementById('valueChart'), {
                 type: 'line',
-                data: { labels, datasets: [{ label: 'Waarde (€)', data: vData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', fill: true, tension: 0.3 }] },
+                data: { labels, datasets: [{ label: 'Portefeuille Waarde (€)', data: vData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', fill: true, tension: 0.3 }] },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
