@@ -41,6 +41,8 @@
         .btn-sell { background-color: var(--danger); color: white; }
         .btn-sell:hover { background-color: #dc2626; }
         .btn-clear { background-color: #94a3b8; color: white; font-size: 0.8rem; }
+        .btn-reset { background-color: #ef4444; color: white; margin-left: auto; }
+        .btn-reset:hover { background-color: #b91c1c; }
 
         .sim-section { background: #1e293b; color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
         .sim-control { flex: 1; min-width: 250px; }
@@ -67,11 +69,17 @@
         .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; }
         .chart-box { height: 320px; }
         .hint { font-size: 0.65rem; font-weight: 400; color: #f59e0b; }
+        
+        .header-actions { display: flex; justify-content: flex-end; margin-bottom: 1rem; }
     </style>
 </head>
 <body>
 
     <div class="card">
+        <div class="header-actions">
+             <button class="btn-reset" onclick="resetPortfolio()">⚠ Reset Portefeuille</button>
+        </div>
+
         <h1>Meerwaardebelasting Calculator</h1>
         
         <h2>Aankoop (Buy)</h2>
@@ -162,6 +170,14 @@
         let sales = [];   // { asset, qty, price, id }
         let charts = { tax: null, value: null };
         let lastEdited = [];
+
+        function resetPortfolio() {
+            if (confirm("Weet je zeker dat je de hele portefeuille wilt wissen? Dit kan niet ongedaan worden gemaakt.")) {
+                entries = [];
+                sales = [];
+                updateUI();
+            }
+        }
 
         function triangulate(id) {
             const qty = document.getElementById('in-qty'), price = document.getElementById('in-price'), total = document.getElementById('in-total');
