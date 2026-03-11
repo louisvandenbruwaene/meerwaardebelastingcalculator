@@ -140,7 +140,7 @@
                 <span class="stat-value" id="stat-np2">€ 0,00</span>
             </div>
             <div class="stat-card">
-                <span class="stat-label">Belasting</span>
+                <span class="stat-label">Belasting (10%)</span>
                 <span class="stat-value" id="stat-tax" style="color: var(--danger);">€ 0,00</span>
             </div>
         </div>
@@ -279,11 +279,12 @@
             const totalNp1 = entries.reduce((sum, e) => sum + e.total, 0);
             const growth = 1 + (parseFloat(document.getElementById('growth-slider').value) / 100);
             const totalNp2 = totalNp1 * growth;
-            const tax = Math.max(totalNp2 - totalNp1 - 10000, 0);
+            const simulatedGain = totalNp2 - totalNp1;
+            const simulatedTax = Math.max(simulatedGain - 10000, 0) * 0.10;
 
             document.getElementById('stat-np1').innerText = '€' + totalNp1.toLocaleString('nl-BE', {minimumFractionDigits: 2});
             document.getElementById('stat-np2').innerText = '€' + totalNp2.toLocaleString('nl-BE', {minimumFractionDigits: 2});
-            document.getElementById('stat-tax').innerText = '€' + tax.toLocaleString('nl-BE', {minimumFractionDigits: 2});
+            document.getElementById('stat-tax').innerText = '€' + simulatedTax.toLocaleString('nl-BE', {minimumFractionDigits: 2});
 
             if (reRenderTable) {
                 const list = document.getElementById('asset-list');
@@ -328,8 +329,8 @@
                         </tr>
                     `).join('');
                     
-                    // FIFO Realized Tax Calculation (33% over threshold of 10000)
-                    const realizedTax = Math.max(totalRealizedGain - 10000, 0) * 0.33;
+                    // FIFO Realized Tax Calculation (10% over threshold of 10000)
+                    const realizedTax = Math.max(totalRealizedGain - 10000, 0) * 0.10;
                     
                     sList.innerHTML += `<table>
                         <thead><tr><th>Asset</th><th>Aantal</th><th>Verkoopprijs</th><th>Winst/Verlies</th><th></th></tr></thead>
@@ -340,7 +341,7 @@
                                 <td colspan="2" style="color: ${totalRealizedGain >= 0 ? 'var(--success)' : 'var(--danger)'}">€${totalRealizedGain.toFixed(2)}</td>
                             </tr>
                             <tr class="sale-total" style="background: #fee2e2;">
-                                <td colspan="3">FIFO Gerealiseerde Meerwaardebelasting (33% boven €10k)</td>
+                                <td colspan="3">FIFO Gerealiseerde Meerwaardebelasting (10% boven €10k)</td>
                                 <td colspan="2" style="color: var(--danger)">€${realizedTax.toFixed(2)}</td>
                             </tr>
                         </tfoot>
@@ -359,7 +360,7 @@
                 const np2 = np1 * (1 + g/100);
                 labels.push(`${g}%`);
                 vData.push(np2);
-                tData.push(Math.max(np2 - np1 - 10000, 0));
+                tData.push(Math.max(np2 - np1 - 10000, 0) * 0.10);
             }
 
             if (charts.tax) charts.tax.destroy();
