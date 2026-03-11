@@ -31,8 +31,8 @@
         }
         .input-field { display: flex; flex-direction: column; gap: 0.3rem; }
         label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--secondary); }
-        input { padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; background: white; width: 100%; box-sizing: border-box; }
-        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        input, select { padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; background: white; width: 100%; box-sizing: border-box; }
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         input.auto { color: #2563eb; font-weight: 600; background: #eff6ff; }
         
         button { padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
@@ -40,14 +40,13 @@
         .btn-add:hover { background-color: #1d4ed8; }
         .btn-sell { background-color: var(--danger); color: white; }
         .btn-sell:hover { background-color: #dc2626; }
-        .btn-clear { background-color: #94a3b8; color: white; font-size: 0.8rem; }
         .btn-export { background-color: #0f172a; color: white; }
         .btn-export:hover { background-color: #334155; }
         .btn-import { background-color: var(--secondary); color: white; }
         .btn-import:hover { background-color: #475569; }
         .btn-reset { background-color: #ef4444; color: white; }
         .btn-reset:hover { background-color: #b91c1c; }
-        .btn-ok { background-color: var(--success); color: white; padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+        .btn-ok { background-color: var(--success); color: white; width: 100%; margin-top: 1rem; }
 
         .sim-section { background: #1e293b; color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
         .sim-control { flex: 1; min-width: 250px; }
@@ -79,9 +78,38 @@
         .settings-panel { display: none; background: #f1f5f9; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid #cbd5e1; }
         .header-actions { display: flex; justify-content: flex-end; margin-bottom: 1rem; gap: 8px; flex-wrap: wrap; }
         .empty-state { text-align: center; color: var(--secondary); padding: 3rem; background: var(--accent); border-radius: 8px; font-style: italic; }
+
+        /* Date Modal Styles */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .date-modal { background: white; padding: 1.5rem; border-radius: 12px; width: 300px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+        .modal-title { font-weight: 800; margin-bottom: 1rem; color: var(--primary); text-align: center; }
+        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     </style>
 </head>
 <body>
+
+    <!-- Date Selection Modal -->
+    <div class="modal-overlay" id="date-modal-overlay">
+        <div class="date-modal">
+            <div class="modal-title">Selecteer Maand & Jaar</div>
+            <div class="modal-grid">
+                <div class="input-field">
+                    <label>Maand</label>
+                    <select id="modal-month">
+                        <option value="01">Januari</option><option value="02">Februari</option><option value="03">Maart</option>
+                        <option value="04">April</option><option value="05">Mei</option><option value="06">Juni</option>
+                        <option value="07">Juli</option><option value="08">Augustus</option><option value="09">September</option>
+                        <option value="10">Oktober</option><option value="11">November</option><option value="12">December</option>
+                    </select>
+                </div>
+                <div class="input-field">
+                    <label>Jaar</label>
+                    <select id="modal-year"></select>
+                </div>
+            </div>
+            <button class="btn-ok" onclick="closeDatePicker()">OK</button>
+        </div>
+    </div>
 
     <div class="card">
         <div class="header-actions">
@@ -112,10 +140,8 @@
         <div class="form-grid">
             <div class="input-field">
                 <label>Datum</label>
-                <div style="display: flex; gap: 4px;">
-                    <input type="date" id="in-date">
-                    <button class="btn-ok" onclick="this.parentElement.querySelector('input').blur()">OK</button>
-                </div>
+                <input type="text" id="in-date-display" readonly onclick="openDatePicker('in')" style="cursor: pointer;">
+                <input type="hidden" id="in-date">
             </div>
             <div class="input-field">
                 <label>Asset Naam</label>
@@ -142,10 +168,8 @@
         <div class="form-grid" style="background: #fff1f2; border: 1px solid #fecaca;">
             <div class="input-field">
                 <label>Datum</label>
-                <div style="display: flex; gap: 4px;">
-                    <input type="date" id="out-date">
-                    <button class="btn-ok" onclick="this.parentElement.querySelector('input').blur()">OK</button>
-                </div>
+                <input type="text" id="out-date-display" readonly onclick="openDatePicker('out')" style="cursor: pointer;">
+                <input type="hidden" id="out-date">
             </div>
             <div class="input-field">
                 <label>Asset Naam</label>
@@ -211,9 +235,20 @@
         let sales = [];   // { asset, qty, price, id, date }
         let charts = { tax: null, value: null };
         let lastEdited = [];
+        let activeDateId = ''; // tracks which input we are editing
 
-        // Load data on startup
+        // Initialize Years in Modal
         window.addEventListener('load', () => {
+            const yearSelect = document.getElementById('modal-year');
+            const currentYear = new Date().getFullYear();
+            for (let y = currentYear + 2; y >= 2010; y--) {
+                const opt = document.createElement('option');
+                opt.value = y; opt.innerText = y;
+                yearSelect.appendChild(opt);
+            }
+            yearSelect.value = currentYear;
+
+            // Load data
             const savedEntries = localStorage.getItem('entries');
             const savedSales = localStorage.getItem('sales');
             const savedThreshold = localStorage.getItem('tax-threshold');
@@ -224,13 +259,38 @@
             if (savedThreshold) document.getElementById('tax-threshold').value = savedThreshold;
             if (savedRate) document.getElementById('tax-rate').value = savedRate;
             
-            // Set default dates to today
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('in-date').value = today;
-            document.getElementById('out-date').value = today;
+            // Set default dates
+            const today = new Date();
+            const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-01';
+            const displayStr = String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear();
+            
+            ['in', 'out'].forEach(id => {
+                document.getElementById(id + '-date').value = dateStr;
+                document.getElementById(id + '-date-display').value = displayStr;
+            });
             
             updateUI();
         });
+
+        // Date Picker Functions
+        function openDatePicker(id) {
+            activeDateId = id;
+            const currentVal = document.getElementById(id + '-date').value;
+            if (currentVal) {
+                const [y, m] = currentVal.split('-');
+                document.getElementById('modal-year').value = y;
+                document.getElementById('modal-month').value = m;
+            }
+            document.getElementById('date-modal-overlay').style.display = 'flex';
+        }
+
+        function closeDatePicker() {
+            const m = document.getElementById('modal-month').value;
+            const y = document.getElementById('modal-year').value;
+            document.getElementById(activeDateId + '-date').value = `${y}-${m}-01`;
+            document.getElementById(activeDateId + '-date-display').value = `${m}/${y}`;
+            document.getElementById('date-modal-overlay').style.display = 'none';
+        }
 
         function saveData() {
             localStorage.setItem('entries', JSON.stringify(entries));
@@ -250,79 +310,37 @@
 
         function exportCSV() {
             let csvContent = "TYPE,ASSET,DATUM,AANTAL,PRIJS/STUK,TOTAAL\n";
-            
-            // purchases
-            entries.forEach(e => {
-                csvContent += `AANKOOP,${e.asset},${e.date},${e.originalQty},${e.price.toFixed(4)},${e.total.toFixed(2)}\n`;
-            });
-
-            // sales
-            sales.forEach(s => {
-                csvContent += `VERKOOP,${s.asset},${s.date},${s.qty},${s.price.toFixed(4)},${(s.qty * s.price).toFixed(2)}\n`;
-            });
-
+            entries.forEach(e => { csvContent += `AANKOOP,${e.asset},${e.date},${e.originalQty},${e.price.toFixed(4)},${e.total.toFixed(2)}\n`; });
+            sales.forEach(s => { csvContent += `VERKOOP,${s.asset},${s.date},${s.qty},${s.price.toFixed(4)},${(s.qty * s.price).toFixed(2)}\n`; });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", "meerwaardebelasting_export.csv");
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
+            link.href = URL.createObjectURL(blob);
+            link.download = "meerwaardebelasting_export.csv";
             link.click();
-            document.body.removeChild(link);
         }
 
         function importCSV(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
-                const text = e.target.result;
-                const lines = text.split('\n');
-                const newEntries = [];
-                const newSales = [];
-
-                // Skip header line
+                const lines = e.target.result.split('\n');
+                const newEntries = [], newSales = [];
                 for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (!line) continue;
-                    
+                    const line = lines[i].trim(); if (!line) continue;
                     const [type, asset, date, qty, price, total] = line.split(',');
-                    if (!asset || isNaN(qty)) continue;
-
                     if (type === 'AANKOOP') {
-                        newEntries.push({
-                            asset: asset.toUpperCase(),
-                            date: date,
-                            qty: parseFloat(qty),
-                            originalQty: parseFloat(qty),
-                            price: parseFloat(price),
-                            total: parseFloat(total),
-                            id: Date.now() + i
-                        });
+                        newEntries.push({ asset: asset.toUpperCase(), date, qty: parseFloat(qty), originalQty: parseFloat(qty), price: parseFloat(price), total: parseFloat(total), id: Date.now() + i });
                     } else if (type === 'VERKOOP') {
-                        newSales.push({
-                            asset: asset.toUpperCase(),
-                            date: date,
-                            qty: parseFloat(qty),
-                            price: parseFloat(price),
-                            id: Date.now() + i
-                        });
+                        newSales.push({ asset: asset.toUpperCase(), date, qty: parseFloat(qty), price: parseFloat(price), id: Date.now() + i });
                     }
                 }
-
-                if (confirm(`Geïmporteerd: ${newEntries.length} aankopen en ${newSales.length} verkopen. Wil je deze toevoegen aan je huidige data? (Annuleren om huidige data te vervangen)`)) {
-                    entries = [...entries, ...newEntries];
-                    sales = [...sales, ...newSales];
+                if (confirm(`Geïmporteerd: ${newEntries.length} aankopen en ${newSales.length} verkopen. Toevoegen aan huidige data? (Annuleren om te vervangen)`)) {
+                    entries = [...entries, ...newEntries]; sales = [...sales, ...newSales];
                 } else {
-                    entries = newEntries;
-                    sales = newSales;
+                    entries = newEntries; sales = newSales;
                 }
-
-                saveData();
-                updateUI();
-                event.target.value = ''; // Reset file input
+                saveData(); updateUI(); event.target.value = '';
             };
             reader.readAsText(file);
         }
@@ -343,128 +361,59 @@
             lastEdited = lastEdited.filter(f => f !== id);
             lastEdited.push(id);
             if (lastEdited.length > 2) lastEdited.shift();
-
             const q = parseFloat(qty.value), p = parseFloat(price.value), t = parseFloat(total.value);
             if (lastEdited.length < 2) return;
-
             const solveFor = ['qty', 'price', 'total'].find(f => !lastEdited.includes(f));
-            
-            if (solveFor === 'total' && !isNaN(q) && !isNaN(p)) {
-                total.value = (q * p).toFixed(2);
-            } else if (solveFor === 'price' && !isNaN(t) && !isNaN(q) && q !== 0) {
-                price.value = (t / q).toFixed(4);
-            } else if (solveFor === 'qty' && !isNaN(t) && !isNaN(p) && p !== 0) {
-                qty.value = (t / p).toFixed(6);
-            }
-            
+            if (solveFor === 'total' && !isNaN(q) && !isNaN(p)) total.value = (q * p).toFixed(2);
+            else if (solveFor === 'price' && !isNaN(t) && !isNaN(q) && q !== 0) price.value = (t / q).toFixed(4);
+            else if (solveFor === 'qty' && !isNaN(t) && !isNaN(p) && p !== 0) qty.value = (t / p).toFixed(6);
             [qty, price, total].forEach(el => el.classList.toggle('auto', el.value !== '' && !lastEdited.includes(el.id.replace('in-', ''))));
         }
 
         function addEntry() {
             const date = document.getElementById('in-date').value;
-            const asset = document.getElementById('in-asset').value.toUpperCase() || 'ASSET';
+            const asset = (document.getElementById('in-asset').value || '').toUpperCase();
             const qty = parseFloat(document.getElementById('in-qty').value);
             const total = parseFloat(document.getElementById('in-total').value);
-            
-            if (!date) {
-                alert("Selecteer een datum.");
-                return;
+            if (!date || !asset || isNaN(qty) || qty <= 0 || isNaN(total) || total < 0) {
+                alert("Vul alle velden correct in."); return;
             }
-            if (!asset || asset.trim() === '') {
-                alert("Vul een naam in voor de asset.");
-                return;
-            }
-            if (isNaN(qty) || qty <= 0) {
-                alert("Aantal moet groter zijn dan 0.");
-                return;
-            }
-            if (isNaN(total) || total < 0) {
-                alert("Totaalbedrag mag niet negatief zijn.");
-                return;
-            }
-
-            entries.push({ 
-                date,
-                asset: asset.trim(), 
-                qty: qty, 
-                originalQty: qty, 
-                total, 
-                price: qty > 0 ? total/qty : 0,
-                id: Date.now()
+            entries.push({ date, asset: asset.trim(), qty, originalQty: qty, total, price: qty > 0 ? total/qty : 0, id: Date.now() });
+            saveData(); updateUI();
+            ['in-asset', 'in-qty', 'in-price', 'in-total'].forEach(id => {
+                const el = document.getElementById(id); el.value = ''; el.className = '';
             });
-            saveData();
-            updateUI();
-            resetForm();
+            lastEdited = [];
         }
 
         function addSale() {
             const date = document.getElementById('out-date').value;
-            const asset = document.getElementById('out-asset').value.toUpperCase();
+            const asset = (document.getElementById('out-asset').value || '').toUpperCase();
             const qty = parseFloat(document.getElementById('out-qty').value);
             const price = parseFloat(document.getElementById('out-price').value);
-            
-            if (!date) {
-                alert("Selecteer een datum.");
-                return;
+            if (!date || !asset || isNaN(qty) || qty <= 0 || isNaN(price) || price < 0) {
+                alert("Vul alle velden correct in."); return;
             }
-            if (!asset || asset.trim() === '') {
-                alert("Vul een naam in voor de asset.");
-                return;
-            }
-            if (isNaN(qty) || qty <= 0) {
-                alert("Te verkopen aantal moet groter zijn dan 0.");
-                return;
-            }
-            if (isNaN(price) || price < 0) {
-                alert("Verkoopprijs mag niet negatief zijn.");
-                return;
-            }
-
-            // Check if we have enough quantity available
             let availableQty = 0;
             entries.forEach(e => { if (e.asset === asset) availableQty += e.originalQty; });
             sales.forEach(s => { if (s.asset === asset) availableQty -= s.qty; });
-
             if (qty > availableQty) {
-                alert(`Niet genoeg ${asset} in portefeuille! Beschikbaar: ${availableQty.toFixed(4)}`);
-                return;
+                alert(`Niet genoeg ${asset} beschikbaar! (${availableQty.toFixed(4)})`); return;
             }
-
             sales.push({ date, asset: asset.trim(), qty, price, id: Date.now() });
-            saveData();
-            updateUI();
+            saveData(); updateUI();
             document.getElementById('out-qty').value = '';
             document.getElementById('out-price').value = '';
         }
 
-        function deleteEntry(index) {
-            entries.splice(index, 1);
-            saveData();
-            updateUI();
-        }
-
-        function deleteSale(index) {
-            sales.splice(index, 1);
-            saveData();
-            updateUI();
-        }
-
+        function deleteEntry(index) { entries.splice(index, 1); saveData(); updateUI(); }
+        function deleteSale(index) { sales.splice(index, 1); saveData(); updateUI(); }
         function moveEntry(index, dir) {
             const newIndex = index + dir;
             if (newIndex >= 0 && newIndex < entries.length) {
-                const temp = entries[index];
-                entries[index] = entries[newIndex];
-                entries[newIndex] = temp;
-                saveData();
-                updateUI();
+                const temp = entries[index]; entries[index] = entries[newIndex]; entries[newIndex] = temp;
+                saveData(); updateUI();
             }
-        }
-
-        function resetForm() {
-            ['in-qty', 'in-price', 'in-total'].forEach(id => {
-                const el = document.getElementById(id); el.value = ''; el.className = '';
-            });
-            lastEdited = [];
         }
 
         function updateSimulation() {
@@ -475,29 +424,21 @@
 
         function updateUI(reRenderTable = true) {
             const { threshold, rate } = getTaxParams();
-
-            // 1. Reset current quantities for FIFO
             entries.forEach(e => e.qty = e.originalQty);
-
-            // 2. FIFO Calculation (for tables)
             let totalRealizedGain = 0;
             const processedSales = sales.map(s => {
-                let remainingToSell = s.qty;
-                let costBasis = 0;
+                let remainingToSell = s.qty, costBasis = 0;
                 for (let e of entries) {
                     if (e.asset === s.asset && e.qty > 0 && remainingToSell > 0) {
                         let soldFromThisEntry = Math.min(e.qty, remainingToSell);
                         costBasis += soldFromThisEntry * e.price;
-                        e.qty -= soldFromThisEntry;
-                        remainingToSell -= soldFromThisEntry;
+                        e.qty -= soldFromThisEntry; remainingToSell -= soldFromThisEntry;
                     }
                 }
                 const gain = (s.qty * s.price) - costBasis;
-                totalRealizedGain += gain;
-                return { ...s, gain };
+                totalRealizedGain += gain; return { ...s, gain };
             });
 
-            // 3. Stats for Black Box
             const totalNp1 = entries.reduce((sum, e) => sum + e.total, 0);
             const growth = 1 + (parseFloat(document.getElementById('growth-slider').value) / 100);
             const totalNp2 = totalNp1 * growth;
@@ -510,27 +451,23 @@
 
             if (reRenderTable) {
                 const list = document.getElementById('asset-list');
-                
                 if (entries.length === 0) {
                     list.innerHTML = '<div class="empty-state">Nog geen activa in portefeuille. Voeg een aankoop toe of importeer een CSV.</div>';
                 } else {
                     list.innerHTML = '<h2>Huidige Portefeuille (FIFO Volgorde)</h2>';
-                    const groups = entries.reduce((acc, e, idx) => { 
-                        (acc[e.asset] = acc[e.asset] || []).push({...e, globalIdx: idx}); 
-                        return acc; 
-                    }, {});
-                    
+                    const groups = entries.reduce((acc, e, idx) => { (acc[e.asset] = acc[e.asset] || []).push({...e, globalIdx: idx}); return acc; }, {});
                     Object.keys(groups).forEach(name => {
                         let aQty = 0, aCost = 0;
                         const rows = groups[name].map((e, i) => {
                             aQty += e.qty; aCost += e.qty * e.price;
                             const isSoldOut = e.qty <= 0;
+                            const d = e.date.split('-');
                             return `<tr style="${isSoldOut ? 'opacity: 0.4; text-decoration: line-through;' : ''}">
                                 <td>
                                     <span style="display: inline-block; width: 20px; font-weight: 800; color: var(--primary);">${i + 1}.</span>
                                     <button class="btn-action" onclick="moveEntry(${e.globalIdx}, -1)">↑</button>
                                     <button class="btn-action" onclick="moveEntry(${e.globalIdx}, 1)">↓</button>
-                                    ${name} <small style="color: var(--secondary)">(${e.date})</small>
+                                    ${name} <small style="color: var(--secondary)">(${d[1]}/${d[0]})</small>
                                 </td>
                                 <td>${e.qty.toFixed(4)} <small>(van ${e.originalQty})</small></td>
                                 <td>€${e.price.toFixed(2)}</td>
@@ -539,7 +476,7 @@
                             </tr>`;
                         }).join('');
                         if (aQty > 0 || groups[name].some(e => e.originalQty > 0)) {
-                            list.innerHTML += `<div class="asset-group"><h3>${name}</h3><table><thead><tr><th>Asset & Volgorde</th><th>Aantal Resterend</th><th>Aankoop Prijs</th><th>Totaal</th><th></th></tr></thead><tbody>${rows}</tbody><tr class="asset-summary"><td>Totaal ${name}</td><td>${aQty.toFixed(4)}</td><td>Gem: €${aQty > 0 ? (aCost/aQty).toFixed(2) : '0.00'}</td><td>€${aCost.toFixed(2)}</td><td></td></tr></table></div>`;
+                            list.innerHTML += `<div class="asset-group"><h3>${name}</h3><table><thead><tr><th>Asset & Volgorde</th><th>Resterend</th><th>Prijs</th><th>Totaal</th><th></th></tr></thead><tbody>${rows}</tbody><tr class="asset-summary"><td>Totaal ${name}</td><td>${aQty.toFixed(4)}</td><td>Gem: €${aQty > 0 ? (aCost/aQty).toFixed(2) : '0.00'}</td><td>€${aCost.toFixed(2)}</td><td></td></tr></table></div>`;
                         }
                     });
                 }
@@ -547,37 +484,14 @@
                 const sList = document.getElementById('sales-list');
                 if (sales.length > 0) {
                     sList.innerHTML = '<h2>Gerealiseerde Transacties</h2>';
-                    const sRows = processedSales.map((s, idx) => `
-                        <tr>
-                            <td>${s.asset} <small style="color: var(--secondary)">(${s.date})</small></td>
-                            <td>${s.qty}</td>
-                            <td>€${s.price.toFixed(2)}</td>
-                            <td style="color: ${s.gain >= 0 ? 'var(--success)' : 'var(--danger)'}">€${s.gain.toFixed(2)}</td>
-                            <td><button class="btn-action btn-del" onclick="deleteSale(${idx})">×</button></td>
-                        </tr>
-                    `).join('');
-                    
+                    const sRows = processedSales.map((s, idx) => {
+                        const d = s.date.split('-');
+                        return `<tr><td>${s.asset} <small style="color: var(--secondary)">(${d[1]}/${d[0]})</small></td><td>${s.qty}</td><td>€${s.price.toFixed(2)}</td><td style="color: ${s.gain >= 0 ? 'var(--success)' : 'var(--danger)'}">€${s.gain.toFixed(2)}</td><td><button class="btn-action btn-del" onclick="deleteSale(${idx})">×</button></td></tr>`;
+                    }).join('');
                     const realizedTax = Math.max(totalRealizedGain - threshold, 0) * rate;
-                    
-                    sList.innerHTML += `<div style="overflow-x:auto;"><table>
-                        <thead><tr><th>Asset</th><th>Aantal</th><th>Verkoopprijs</th><th>Winst/Verlies</th><th></th></tr></thead>
-                        <tbody>${sRows}</tbody>
-                        <tfoot>
-                            <tr class="sale-total">
-                                <td colspan="3">Totaal Gerealiseerde Meerwaarde</td>
-                                <td colspan="2" style="color: ${totalRealizedGain >= 0 ? 'var(--success)' : 'var(--danger)'}">€${totalRealizedGain.toFixed(2)}</td>
-                            </tr>
-                            <tr class="sale-total" style="background: #fee2e2;">
-                                <td colspan="3">FIFO Gerealiseerde Meerwaardebelasting (${(rate * 100).toFixed(0)}% boven €${(threshold/1000).toFixed(0)}k)</td>
-                                <td colspan="2" style="color: var(--danger)">€${realizedTax.toFixed(2)}</td>
-                            </tr>
-                        </tfoot>
-                    </table></div>`;
-                } else {
-                    sList.innerHTML = '';
-                }
+                    sList.innerHTML += `<div style="overflow-x:auto;"><table><thead><tr><th>Asset</th><th>Aantal</th><th>Verkoopprijs</th><th>Winst/Verlies</th><th></th></tr></thead><tbody>${sRows}</tbody><tfoot><tr class="sale-total"><td colspan="3">Totaal Gerealiseerde Meerwaarde</td><td colspan="2" style="color: ${totalRealizedGain >= 0 ? 'var(--success)' : 'var(--danger)'}">€${totalRealizedGain.toFixed(2)}</td></tr><tr class="sale-total" style="background: #fee2e2;"><td colspan="3">Gerealiseerde Belasting (${(rate*100).toFixed(0)}% boven €${(threshold/1000).toFixed(0)}k)</td><td colspan="2" style="color: var(--danger)">€${realizedTax.toFixed(2)}</td></tr></tfoot></table></div>`;
+                } else { sList.innerHTML = ''; }
             }
-
             updateCharts(totalNp1);
         }
 
@@ -586,29 +500,17 @@
             const labels = [], vData = [], tData = [];
             for (let g = -20; g <= 100; g += 5) {
                 const np2 = np1 * (1 + g/100);
-                labels.push(`${g}%`);
-                vData.push(np2);
-                tData.push(Math.max(np2 - np1 - threshold, 0) * rate);
+                labels.push(`${g}%`); vData.push(np2); tData.push(Math.max(np2 - np1 - threshold, 0) * rate);
             }
-
             if (charts.tax) charts.tax.destroy();
             charts.tax = new Chart(document.getElementById('taxChart'), {
-                type: 'line',
-                data: { labels, datasets: [{ label: 'Belasting (€)', data: tData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 }] },
-                options: { 
-                    responsive: true, maintainAspectRatio: false,
-                    scales: { x: { grid: { color: (c) => c.tick && c.tick.label === '0%' ? 'rgba(15, 23, 42, 0.5)' : 'rgba(0,0,0,0.1)', lineWidth: (c) => c.tick && c.tick.label === '0%' ? 2 : 1 } } }
-                }
+                type: 'line', data: { labels, datasets: [{ label: 'Belasting (€)', data: tData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: (c) => c.tick && c.tick.label === '0%' ? 'rgba(15, 23, 42, 0.5)' : 'rgba(0,0,0,0.1)', lineWidth: (c) => c.tick && c.tick.label === '0%' ? 2 : 1 } } } }
             });
-
             if (charts.value) charts.value.destroy();
             charts.value = new Chart(document.getElementById('valueChart'), {
-                type: 'line',
-                data: { labels, datasets: [{ label: 'Waarde (€)', data: vData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', fill: true, tension: 0.3 }] },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-                    scales: { x: { grid: { color: (c) => c.tick && c.tick.label === '0%' ? 'rgba(15, 23, 42, 0.5)' : 'rgba(0,0,0,0.1)', lineWidth: (c) => c.tick && c.tick.label === '0%' ? 2 : 1 } } }
-                }
+                type: 'line', data: { labels, datasets: [{ label: 'Waarde (€)', data: vData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: (c) => c.tick && c.tick.label === '0%' ? 'rgba(15, 23, 42, 0.5)' : 'rgba(0,0,0,0.1)', lineWidth: (c) => c.tick && c.tick.label === '0%' ? 2 : 1 } } } }
             });
         }
     </script>
