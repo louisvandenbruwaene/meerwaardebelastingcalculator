@@ -163,6 +163,20 @@
         let charts = { tax: null, value: null };
         let lastEdited = [];
 
+        // Load data on startup
+        window.addEventListener('load', () => {
+            const savedEntries = localStorage.getItem('entries');
+            const savedSales = localStorage.getItem('sales');
+            if (savedEntries) entries = JSON.parse(savedEntries);
+            if (savedSales) sales = JSON.parse(savedSales);
+            updateUI();
+        });
+
+        function saveData() {
+            localStorage.setItem('entries', JSON.stringify(entries));
+            localStorage.setItem('sales', JSON.stringify(sales));
+        }
+
         function triangulate(id) {
             const qty = document.getElementById('in-qty'), price = document.getElementById('in-price'), total = document.getElementById('in-total');
             lastEdited = lastEdited.filter(f => f !== id);
@@ -194,6 +208,7 @@
                 price: total/qty,
                 id: Date.now()
             });
+            saveData();
             updateUI();
             resetForm();
         }
@@ -215,6 +230,7 @@
             }
 
             sales.push({ asset, qty, price, id: Date.now() });
+            saveData();
             updateUI();
             document.getElementById('out-qty').value = '';
             document.getElementById('out-price').value = '';
@@ -222,11 +238,13 @@
 
         function deleteEntry(index) {
             entries.splice(index, 1);
+            saveData();
             updateUI();
         }
 
         function deleteSale(index) {
             sales.splice(index, 1);
+            saveData();
             updateUI();
         }
 
@@ -236,6 +254,7 @@
                 const temp = entries[index];
                 entries[index] = entries[newIndex];
                 entries[newIndex] = temp;
+                saveData();
                 updateUI();
             }
         }
