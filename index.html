@@ -296,11 +296,12 @@
                 
                 Object.keys(groups).forEach(name => {
                     let aQty = 0, aCost = 0;
-                    const rows = groups[name].map(e => {
+                    const rows = groups[name].map((e, i) => {
                         aQty += e.qty; aCost += e.qty * e.price;
                         const isSoldOut = e.qty <= 0;
                         return `<tr style="${isSoldOut ? 'opacity: 0.4; text-decoration: line-through;' : ''}">
                             <td>
+                                <span style="display: inline-block; width: 20px; font-weight: 800; color: var(--primary);">${i + 1}.</span>
                                 <button class="btn-action" onclick="moveEntry(${e.globalIdx}, -1)">↑</button>
                                 <button class="btn-action" onclick="moveEntry(${e.globalIdx}, 1)">↓</button>
                                 ${name}
