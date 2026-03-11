@@ -57,6 +57,7 @@
         th { text-align: left; padding: 0.75rem; color: var(--secondary); border-bottom: 2px solid var(--border); font-size: 0.75rem; text-transform: uppercase; }
         td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
         tr.asset-summary { background: #f8fafc; font-weight: 700; }
+        tr.sale-total { background: #fee2e2; font-weight: 800; border-top: 2px solid var(--danger); }
         
         .btn-action { background: none; border: 1px solid var(--border); padding: 2px 6px; font-size: 0.7rem; color: var(--secondary); margin-right: 2px; border-radius: 4px; }
         .btn-action:hover { background: var(--accent); color: var(--primary); }
@@ -326,7 +327,24 @@
                             <td><button class="btn-action btn-del" onclick="deleteSale(${idx})">×</button></td>
                         </tr>
                     `).join('');
-                    sList.innerHTML += `<table><thead><tr><th>Asset</th><th>Aantal</th><th>Verkoopprijs</th><th>Winst/Verlies</th><th></th></tr></thead><tbody>${sRows}</tbody></table>`;
+                    
+                    // FIFO Realized Tax Calculation (33% over threshold of 10000)
+                    const realizedTax = Math.max(totalRealizedGain - 10000, 0) * 0.33;
+                    
+                    sList.innerHTML += `<table>
+                        <thead><tr><th>Asset</th><th>Aantal</th><th>Verkoopprijs</th><th>Winst/Verlies</th><th></th></tr></thead>
+                        <tbody>${sRows}</tbody>
+                        <tfoot>
+                            <tr class="sale-total">
+                                <td colspan="3">Totaal Gerealiseerde Meerwaarde</td>
+                                <td colspan="2" style="color: ${totalRealizedGain >= 0 ? 'var(--success)' : 'var(--danger)'}">€${totalRealizedGain.toFixed(2)}</td>
+                            </tr>
+                            <tr class="sale-total" style="background: #fee2e2;">
+                                <td colspan="3">FIFO Gerealiseerde Meerwaardebelasting (33% boven €10k)</td>
+                                <td colspan="2" style="color: var(--danger)">€${realizedTax.toFixed(2)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>`;
                 } else {
                     sList.innerHTML = '';
                 }
