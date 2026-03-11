@@ -41,10 +41,13 @@
         .btn-sell { background-color: var(--danger); color: white; }
         .btn-sell:hover { background-color: #dc2626; }
         .btn-clear { background-color: #94a3b8; color: white; font-size: 0.8rem; }
-        .btn-export { background-color: #0f172a; color: white; margin-left: 8px; }
+        .btn-export { background-color: #0f172a; color: white; }
         .btn-export:hover { background-color: #334155; }
+        .btn-import { background-color: var(--secondary); color: white; }
+        .btn-import:hover { background-color: #475569; }
         .btn-reset { background-color: #ef4444; color: white; }
         .btn-reset:hover { background-color: #b91c1c; }
+        .btn-ok { background-color: var(--success); color: white; padding: 0.4rem 0.8rem; font-size: 0.8rem; }
 
         .sim-section { background: #1e293b; color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
         .sim-control { flex: 1; min-width: 250px; }
@@ -74,7 +77,7 @@
         
         .settings-toggle { margin-bottom: 1rem; font-size: 0.8rem; color: var(--primary); text-decoration: underline; cursor: pointer; }
         .settings-panel { display: none; background: #f1f5f9; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid #cbd5e1; }
-        .header-actions { display: flex; justify-content: flex-end; margin-bottom: 1rem; gap: 8px; }
+        .header-actions { display: flex; justify-content: flex-end; margin-bottom: 1rem; gap: 8px; flex-wrap: wrap; }
         .empty-state { text-align: center; color: var(--secondary); padding: 3rem; background: var(--accent); border-radius: 8px; font-style: italic; }
     </style>
 </head>
@@ -82,8 +85,10 @@
 
     <div class="card">
         <div class="header-actions">
-             <button class="btn-reset" onclick="resetPortfolio()">⚠ Reset Portefeuille</button>
+             <button class="btn-reset" onclick="resetPortfolio()">⚠ Reset Data</button>
+             <button class="btn-import" onclick="document.getElementById('csv-file').click()">⬆ Importeer CSV</button>
              <button class="btn-export" onclick="exportCSV()">⬇ Exporteer CSV</button>
+             <input type="file" id="csv-file" style="display: none;" accept=".csv" onchange="importCSV(event)">
         </div>
 
         <h1>Meerwaardebelasting Calculator</h1>
@@ -107,7 +112,10 @@
         <div class="form-grid">
             <div class="input-field">
                 <label>Datum</label>
-                <input type="date" id="in-date">
+                <div style="display: flex; gap: 4px;">
+                    <input type="date" id="in-date">
+                    <button class="btn-ok" onclick="this.parentElement.querySelector('input').blur()">OK</button>
+                </div>
             </div>
             <div class="input-field">
                 <label>Asset Naam</label>
@@ -127,7 +135,6 @@
             </div>
             <div style="display: flex; gap: 8px;">
                 <button class="btn-add" onclick="addEntry()">Voeg toe</button>
-                <button class="btn-clear" onclick="resetForm()">Wis</button>
             </div>
         </div>
 
@@ -135,7 +142,10 @@
         <div class="form-grid" style="background: #fff1f2; border: 1px solid #fecaca;">
             <div class="input-field">
                 <label>Datum</label>
-                <input type="date" id="out-date">
+                <div style="display: flex; gap: 4px;">
+                    <input type="date" id="out-date">
+                    <button class="btn-ok" onclick="this.parentElement.querySelector('input').blur()">OK</button>
+                </div>
             </div>
             <div class="input-field">
                 <label>Asset Naam</label>
@@ -155,7 +165,7 @@
         </div>
 
         <div id="asset-list">
-             <div class="empty-state">Nog geen activa in portefeuille. Voeg een aankoop toe om te beginnen.</div>
+             <div class="empty-state">Nog geen activa in portefeuille. Voeg een aankoop toe of importeer een CSV.</div>
         </div>
         <div id="sales-list"></div>
     </div>
@@ -230,7 +240,7 @@
         }
 
         function resetPortfolio() {
-            if (confirm("Weet je zeker dat je de hele portefeuille wilt wissen? Dit kan niet ongedaan worden gemaakt.")) {
+            if (confirm("Weet je zeker dat je alle data wilt wissen? Dit kan niet ongedaan worden gemaakt.")) {
                 entries = [];
                 sales = [];
                 saveData();
@@ -239,28 +249,82 @@
         }
 
         function exportCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,";
+            let csvContent = "TYPE,ASSET,DATUM,AANTAL,PRIJS/STUK,TOTAAL\n";
             
-            // Section 1: Purchases (Current Portfolio)
-            csvContent += "TYPE,ASSET,DATUM,AANTAL,PRIJS/STUK,TOTAAL\n";
+            // purchases
             entries.forEach(e => {
-                const date = e.date ? e.date : new Date(e.id).toISOString().split('T')[0];
-                csvContent += `AANKOOP,${e.asset},${date},${e.qty},${e.price.toFixed(4)},${e.total.toFixed(2)}\n`;
+                csvContent += `AANKOOP,${e.asset},${e.date},${e.originalQty},${e.price.toFixed(4)},${e.total.toFixed(2)}\n`;
             });
 
-            // Section 2: Sales
+            // sales
             sales.forEach(s => {
-                const date = s.date ? s.date : new Date(s.id).toISOString().split('T')[0];
-                csvContent += `VERKOOP,${s.asset},${date},${s.qty},${s.price.toFixed(4)},${(s.qty * s.price).toFixed(2)}\n`;
+                csvContent += `VERKOOP,${s.asset},${s.date},${s.qty},${s.price.toFixed(4)},${(s.qty * s.price).toFixed(2)}\n`;
             });
 
-            const encodedUri = encodeURI(csvContent);
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
             link.setAttribute("download", "meerwaardebelasting_export.csv");
+            link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        function importCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                const newEntries = [];
+                const newSales = [];
+
+                // Skip header line
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const [type, asset, date, qty, price, total] = line.split(',');
+                    if (!asset || isNaN(qty)) continue;
+
+                    if (type === 'AANKOOP') {
+                        newEntries.push({
+                            asset: asset.toUpperCase(),
+                            date: date,
+                            qty: parseFloat(qty),
+                            originalQty: parseFloat(qty),
+                            price: parseFloat(price),
+                            total: parseFloat(total),
+                            id: Date.now() + i
+                        });
+                    } else if (type === 'VERKOOP') {
+                        newSales.push({
+                            asset: asset.toUpperCase(),
+                            date: date,
+                            qty: parseFloat(qty),
+                            price: parseFloat(price),
+                            id: Date.now() + i
+                        });
+                    }
+                }
+
+                if (confirm(`Geïmporteerd: ${newEntries.length} aankopen en ${newSales.length} verkopen. Wil je deze toevoegen aan je huidige data? (Annuleren om huidige data te vervangen)`)) {
+                    entries = [...entries, ...newEntries];
+                    sales = [...sales, ...newSales];
+                } else {
+                    entries = newEntries;
+                    sales = newSales;
+                }
+
+                saveData();
+                updateUI();
+                event.target.value = ''; // Reset file input
+            };
+            reader.readAsText(file);
         }
 
         function toggleSettings() {
@@ -448,7 +512,7 @@
                 const list = document.getElementById('asset-list');
                 
                 if (entries.length === 0) {
-                    list.innerHTML = '<div class="empty-state">Nog geen activa in portefeuille. Voeg een aankoop toe om te beginnen.</div>';
+                    list.innerHTML = '<div class="empty-state">Nog geen activa in portefeuille. Voeg een aankoop toe of importeer een CSV.</div>';
                 } else {
                     list.innerHTML = '<h2>Huidige Portefeuille (FIFO Volgorde)</h2>';
                     const groups = entries.reduce((acc, e, idx) => { 
